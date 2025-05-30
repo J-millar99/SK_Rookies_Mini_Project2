@@ -1,8 +1,8 @@
 import { Grid, Card, CardContent, Typography, Box, Chip, Divider } from '@mui/material';
 
-const CARD_WIDTH = 200;
-const CARD_HEIGHT = 240;
-const IMAGE_HEIGHT = 160;
+const CARD_WIDTH = 210;
+const CARD_HEIGHT = 284;
+const IMAGE_HEIGHT = 200;
 
 const ProductsList = ({ products, onProductClick, formatTime }) => {
   return (
@@ -64,10 +64,9 @@ const ProductsList = ({ products, onProductClick, formatTime }) => {
                   src={product.images[0]}
                   alt={product.title}
                   style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
+                    width: '100%',
+                    height: '100%',
                     objectFit: 'cover',
-                    borderRadius: 4,
                   }}
                 />
               ) : (
@@ -85,6 +84,7 @@ const ProductsList = ({ products, onProductClick, formatTime }) => {
                 maxHeight: 120,
                 boxSizing: 'border-box',
                 pb: '0 !important',
+                pt: 1,
               }}
             >
               <Typography

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Grid, Typography } from '@mui/material';
 import ProductCard from '../components/ProductCard';
-import ProductSearch from '../components/ProductSearch';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Layout from '../components/Layout';
 const allProducts = Array.from({ length: 100 }).map((_, i) => ({
@@ -33,7 +32,6 @@ const HomePage = () => {
   return (
     <Layout>
     <Container sx={{ paddingTop: '80px' }}>
-      <ProductSearch />
       <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>오늘의 상품 추천</Typography>
         <InfiniteScroll
           dataLength={products.length}

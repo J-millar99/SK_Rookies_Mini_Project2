@@ -1,32 +1,39 @@
 import { useState } from 'react';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const CategorySelect = ({ value, onChange, options }) => {
     const [open, setOpen] = useState(false);
 
+    // 현재 선택된 카테고리 라벨 찾기
+    const selectedLabel = options.find(opt => opt.value === value)?.label || '카테고리';
+
     return (
         <div
-            style={{ position: 'relative', display: 'inline-block', width: 120 }}
+            style={{
+                position: 'relative',
+                display: 'inline-block',
+                paddingBottom: 12 // 시각적 간격만 띄움
+            }}
             onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
         >
-            {/* 모달 버튼과 동일한 스타일 */}
             <button
                 style={{
-                    width: '100%',
-                    padding: 4,
-                    fontSize: 13,
-                    border: '1px solid #ccc',
-                    borderRadius: 4,
-                    background: '#fff',
+                    width: 36,
+                    height: 36,
+                    padding: 0,
+                    marginTop: 3,
+                    border: 'none',
+                    background: 'none',
                     cursor: 'pointer',
-                    textAlign: 'center',
-                    userSelect: 'none'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: 'none',
                 }}
                 type="button"
             >
-                {value
-                    ? options.find(opt => opt.value === value)?.label || '카테고리'
-                    : '카테고리'}
+                <MenuIcon fontSize="large" />
             </button>
             {open && (
                 <div
@@ -42,7 +49,33 @@ const CategorySelect = ({ value, onChange, options }) => {
                         minWidth: 120,
                         width: 120,
                     }}
+                    // 드롭다운 전체에 마우스 이벤트 적용
+                    onMouseEnter={() => setOpen(true)}
+                    onMouseLeave={() => setOpen(false)}
                 >
+                    <div
+                        style={{
+                            padding: 6,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: value ? '#1976d2' : '#888',
+                            borderBottom: '1px solid #eee',
+                            background: '#fafafa',
+                            textAlign: 'center',
+                            cursor: value ? 'pointer' : 'default',
+                            userSelect: 'none'
+                        }}
+                        onClick={() => {
+                            if (value) {
+                                onChange({ target: { value: '' } });
+                                setOpen(false);
+                            }
+                        }}
+                    >
+                        {selectedLabel}
+                    </div>
+                    {/* 구분선만 추가, 여백 최소화 */}
+                    {/* <div style={{ height: 8 }} /> */}
                     {options.map(opt => (
                         <div
                             key={opt.value}
@@ -54,7 +87,11 @@ const CategorySelect = ({ value, onChange, options }) => {
                                 textAlign: 'center'
                             }}
                             onClick={() => {
-                                onChange({ target: { value: opt.value } });
+                                if (value === opt.value) {
+                                    onChange({ target: { value: '' } });
+                                } else {
+                                    onChange({ target: { value: opt.value } });
+                                }
                                 setOpen(false);
                             }}
                         >

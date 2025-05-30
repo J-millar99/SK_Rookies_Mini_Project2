@@ -3,7 +3,6 @@ import { products as allProducts } from "../constants/ExpProductDB";
 // import { useEffect, useState } from "react"; // 백엔드 연동 시 필요
 // import axios from "axios"; // 백엔드 연동 시 필요
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from '../components/Header';
 import { FilterProducts } from '../utils/FilterProducts';
 import { FormatTime } from '../utils/FormatTime';
 import ProductsList from '../components/ProductsList';
@@ -50,41 +49,41 @@ const ProductsPage = () => {
   const goToPage = (newPage) => {
     params.set('page', newPage);
     navigate({ search: params.toString() });
+    window.scrollTo(0, 0);
   };
 
   return (
-    <Box sx={{ p: 3, minHeight: 'calc(100vh - 80px)', pb: 10 }}>
-      <Header />
-      <Box sx={{ height: 72 }} />
+    <Box sx={{ p: 0, pb: 10 }}>
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            width: 1100,
-            mx: 'auto',
-            pt: 2,
-            pb: 2,
-            pl: 5,
+            width: 1200,
+            mx: 1,
+            p: 5,
             position: 'relative',
           }}
         >
         {pagedProducts.length === 0 ? (
-          <Box sx={{ width: '100%', py: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Box sx={{ width: '100%', py: 10, display: 'flex', justifyContent: 'center',
+           alignItems: 'center' }}>
             <Typography variant="h6" color="text.secondary">
               해당하는 상품을 찾을 수 없습니다.
             </Typography>
           </Box>
         ) : (
           <ProductsList
-          products={pagedProducts}
-          onProductClick={(id) => navigate(`/products/${id}`)}
-          formatTime={FormatTime}
-        />
+            products={pagedProducts}
+            onProductClick={(id) => navigate(`/products/${id}`)}
+            formatTime={FormatTime}
+          />
         )}
       </Box>
       {/* 페이지네이션 버튼을 제품 박스 아래로 이동 */}
       {totalPages > 1 && (
-        <PaginationBar page={page} totalPages={totalPages} goToPage={goToPage} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <PaginationBar page={page} totalPages={totalPages} goToPage={goToPage} />
+        </Box>
       )}
     </Box>
   );

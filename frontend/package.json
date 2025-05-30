@@ -26,6 +26,8 @@
 
     "@emotion/styled": "^11.14.0",
 
+    "@mui/icons-material": "^7.1.0",
+
     "@mui/material": "^7.1.0",
 
     "@portone/browser-sdk": "^0.0.21",
@@ -40,11 +42,8 @@
 
     "react-dom": "^19.1.0",
 
-<<<<<<< HEAD
     "react-infinite-scroll-component": "^6.1.0",
 
-=======
->>>>>>> 4c89600b29f008cfec721ae0bccba9e156a9f02a
     "react-redux": "^9.2.0",
 
     "react-router-dom": "^7.6.1"

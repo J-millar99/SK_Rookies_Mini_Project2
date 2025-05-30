@@ -155,4 +155,48 @@ export const products = [
     area: "",
     createdAt: "2025-05-29T14:28:00+09:00"
   },
+  {
+    id: 190,
+    title: "1975년도 출시된 캐논 310XL 슈퍼 8 무비 카메라",
+    description: `저희 상점 팔로우 해주시면 매 구매시마다 소정의 랜덤 사은품 보내드립니다.^^
+
+      구매전 필독사항
+
+      관리가 잘되어 상당히 깨끗합니다. 건전지 넣으면 프레임 촬영은 작동하지만 일부 기능은 소실되어 작동하지 않습시다. 실사용 하시려면 고치셔야 됩니다. 소장용이나 인테리어용으로 쓰시길 바랍니다. 손잡이 접을수 있어 세워서 전시 가능 합니다.
+
+      캐논 310XL 슈퍼 8 무비 카메라다. 1970년대에 생산되었으며, 가정용 영화 촬영에 주로 사용되었다.
+
+      렌즈: Canon Zoom Lens C8 Macro f/1.0, 8.5-25.5mm
+
+      필름: 슈퍼 8 필름 카트리지
+
+      촬영 속도: 18fps, 싱글 프레임
+
+      노출 제어: 자동 노출 제어, TTL Servo EE
+
+      배터리: AA 배터리 2개
+
+      특징:
+
+      저조도 환경에 강함.
+
+      3배 줌 기능.
+
+      매크로 촬영 가능.
+
+      휴대가 간편한 크기.
+
+      자동 및 수동 줌 기능.`,
+    price: 58000,
+    category: "디지털기기",
+    status: "SALE",
+    images: ['https://media.bunjang.co.kr/product/333722260_1_1748215471_w540.jpg',
+      'https://media.bunjang.co.kr/product/333722260_2_1748215471_w540.jpg',
+      'https://media.bunjang.co.kr/product/333722260_3_1748215471_w540.jpg',
+      'https://media.bunjang.co.kr/product/333722260_4_1748215471_w540.jpg',
+      'https://media.bunjang.co.kr/product/333722260_5_1748215471_w540.jpg',
+      'https://media.bunjang.co.kr/product/333722260_7_1748215471_w540.jpg',],
+    area: "",
+    createdAt: "2025-05-30T14:56:00+09:00"
+  }
 ];

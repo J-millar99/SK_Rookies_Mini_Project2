@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import emdData from '../json/emd_code.json';
 import axios from 'axios';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 
 const PAGE_SIZE = 20;
 const KAKAO_REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY; // 실제 키로 교체 필요
 
-const AreaSelectModal = ({ onSelect, onClose }) => {
+const AreaSelectModal = ({ onSelect, onClose, onReset }) => {
     const [area, setArea] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -13,6 +14,10 @@ const AreaSelectModal = ({ onSelect, onClose }) => {
     const [myLocation, setMyLocation] = useState(null);
     const [locLoading, setLocLoading] = useState(false);
     const [locError, setLocError] = useState('');
+    const [resetHover, setResetHover] = useState(false);
+    const [hoveredIdx, setHoveredIdx] = useState(-1);
+
+
 
     const handleAreaChange = (e) => {
         const value = e.target.value.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -149,9 +154,10 @@ const AreaSelectModal = ({ onSelect, onClose }) => {
                     placeholder="지역명 입력"
                     value={area}
                     onChange={handleAreaChange}
-                    style={{ width: '100%', marginBottom: 8 }}
+                    style={{ width: '100%', marginBottom: 8, height: 40, borderRadius: 5 }}
                     autoFocus
                 />
+                
                 {/* 내 위치 찾기 버튼 */}
                 <button
                     style={{ width: '100%', marginBottom: 8, background: '#f0f0f0', padding: 8, borderRadius: 4 }}
@@ -160,6 +166,32 @@ const AreaSelectModal = ({ onSelect, onClose }) => {
                 >
                     {locLoading ? '내 위치 찾는 중...' : '내 위치 찾기'}
                 </button>
+
+                {/* 지역 선택 초기화 버튼 */}
+                <button
+                    style={{
+                        width: '100%',
+                        marginBottom: 8,
+                        background: '#fff',
+                        padding: 8,
+                        borderRadius: 4,
+                        border: `1px solid ${resetHover ? '#EA002C' : '#ccc'}`,
+                        color: '#EA002C',
+                        transition: 'border-color 0.2s'
+                    }}
+                    onMouseEnter={() => setResetHover(true)}
+                    onMouseLeave={() => setResetHover(false)}
+                    onClick={() => {
+                        setArea('');
+                        setSuggestions([]);
+                        setShowSuggestions(false);
+                        setMyLocation(null);
+                        if (onReset) onReset();
+                    }}
+                >
+                    지역 선택 초기화
+                </button>
+
                 {/* 내 위치 결과 시각화 */}
                 {locError && <div style={{ color: 'red', marginBottom: 8 }}>{locError}</div>}
                 {myLocation && (
@@ -188,7 +220,14 @@ const AreaSelectModal = ({ onSelect, onClose }) => {
                         {pagedSuggestions.map((s, idx) => (
                             <li
                                 key={idx}
-                                style={{ padding: 8, cursor: 'pointer' }}
+                                style={{
+                                    padding: 8,
+                                    cursor: 'pointer',
+                                    background: hoveredIdx === idx ? '#f0f0f0' : '#fff', // hover 시 배경색 변경
+                                    transition: 'background 0.15s'
+                                }}
+                                onMouseEnter={() => setHoveredIdx(idx)}
+                                onMouseLeave={() => setHoveredIdx(-1)}
                                 onClick={() => handleSuggestionClick(s)}
                             >
                                 {[s.시도명, s.시군구명, s.읍면동명].filter(Boolean).join(' ')}
@@ -236,9 +275,19 @@ const AreaSelectModal = ({ onSelect, onClose }) => {
                     </ul>
                 )}
                 <button
-                    style={{ position: 'absolute', top: 8, right: 8 }}
+                    style={{
+                        position: 'absolute',
+                        top: 4,
+                        right: 4,
+                        padding: 0,
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                    }}
                     onClick={onClose}
-                >닫기</button>
+                >
+                    <CloseRoundedIcon fontSize="medium" />
+                </button>
             </div>
         </div>
     );

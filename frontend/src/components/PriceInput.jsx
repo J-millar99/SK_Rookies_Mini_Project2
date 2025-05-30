@@ -18,7 +18,7 @@ const PriceInput = ({ value, onChange, placeholder }) => {
             placeholder={placeholder}
             value={value}
             onChange={handleChange}
-            style={{ width: 80 }}
+            style={{ width: 120, height: 30, border: 'solid 1px',borderRadius: 5 }}
         />
     );
 };

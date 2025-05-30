@@ -5,7 +5,7 @@ const PaginationBar = ({ page, totalPages, goToPage }) => (
     component="footer"
     sx={{
       mt: 3,
-      width: 1100,
+      width: '100%',
       mx: 'auto',
       bgcolor: '#fff',
       borderTop: '1px solid #eee',
