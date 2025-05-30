@@ -1,7 +1,6 @@
 package com.miniproject.rookiejangter.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,8 +15,9 @@ import java.time.LocalDateTime;
 public class Cancelation {
 
     @Id
-    @Column(name = "reservation_id")
-    private Long reservationId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cancelation_id")
+    private Long cancelationId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
@@ -37,9 +37,9 @@ public class Cancelation {
     @Override
     public String toString() {
         return "Cancelation{" +
-                "reservationId=" + reservationId +
-                ", reservation=" + reservation +
-                ", cancelationReason=" + cancelationReason +
+                "cancelationId=" + cancelationId +
+                ", reservationId=" + (reservation != null ? reservation.getReservationId() : null) +
+                ", cancelationReasonId=" + (cancelationReason != null ? cancelationReason.getCancelationReasonId() : null) +
                 ", cancelationDetail='" + cancelationDetail + '\'' +
                 ", canceledAt=" + canceledAt +
                 '}';
@@ -50,11 +50,11 @@ public class Cancelation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cancelation cancelation = (Cancelation) o;
-        return reservationId != null && reservationId.equals(cancelation.reservationId);
+        return reservation != null && reservation.getReservationId().equals(cancelation.getReservation().getReservationId());
     }
 
     @Override
     public int hashCode() {
-        return getClass().hashCode();
+        return reservation != null ? reservation.getReservationId().hashCode() : 0;
     }
 }

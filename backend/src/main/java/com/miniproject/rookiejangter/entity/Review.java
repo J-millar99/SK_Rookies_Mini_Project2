@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "reviews")
@@ -12,7 +13,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Review extends BaseEntity {
 
     @Id
@@ -25,8 +26,12 @@ public class Review extends BaseEntity {
     private Complete complete;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "buyer_id")
+    private User buyer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id")
+    private User seller;
 
     @Column(name = "rating", nullable = false)
     private Integer rating;
@@ -38,6 +43,9 @@ public class Review extends BaseEntity {
     public String toString() {
         return "Review{" +
                 "reviewId=" + reviewId +
+                ", complete=" + complete +
+                ", buyer=" + buyer +
+                ", seller=" + seller +
                 ", rating=" + rating +
                 ", content='" + content + '\'' +
                 '}';

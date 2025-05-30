@@ -38,27 +38,27 @@
 
 ### 2.1 Entity 분류 매트릭스
 
-| Entity명               | 유형 | 비즈니스 중요도 | 기술적 복잡도 | 연관관계 수 | 우선순위 |
-| ---------------------- | ---- | --------------- | ------------- | ----------- | -------- |
-| **Reservation**        | 핵심 | 낮음            | 높음          | 3개         | 1순위    |
-| **Complete**           | 핵심 | 낮음            | 높음          | 3개         | 1순위    |
-| **Goods**              | 지원 | 낮음            | 높음          | 2개         | 1순위    |
-| **Product**            | 핵심 | 높음            | 높음          | 8개         | 1순위    |
-| **User**               | 핵심 | 중간            | 높음          | 10개        | 1순위    |
-| **CancellationReason** | 지원 | 중간            | 중간          | 1개         | 2순위    |
-| **Bump**               | 지원 | 낮음            | 중간          | 1개         | 2순위    |
-| **Dibs**               | 지원 | 낮음            | 중간          | 2개         | 2순위    |
-| **Notification**       | 지원 | 중간            | 중간          | 1개         | 2순위    |
-| **Review**             | 지원 | 낮음            | 중간          | 2개         | 2순위    |
-| **Category**           | 지원 | 낮음            | 중간          | 1개         | 2순위    |
-| **Cancellation**       | 이력 | 중              | 높음          | 2개         | 2순위    |
-| **Message**            | 이력 | 중간            | 높음          | 1개         | 2순위    |
-| **Chat**               | 핵심 | 높음            | 중간          | 3개         | 2순위    |
-| **Area**               | 이력 | 낮음            | 낮음          | 1개         | 3순위    |
-| **Image**              | 이력 | 낮음            | 낮음          | 1개         | 3순위    |
-| **ReportReason**       | 지원 | 낮음            | 낮음          | 1개         | 3순위    |
-| **Report**             | 이력 | 중간            | 낮음          | 3개         | 3순위    |
-| **Ban**                | 이력 | 낮음            | 낮음          | 2개         | 3순위    |
+| Entity명              | 유형 | 비즈니스 중요도 | 기술적 복잡도 | 연관관계 수 | 우선순위 |
+| --------------------- | ---- | --------------- | ------------- | ----------- | -------- |
+| **Reservation**       | 핵심 | 낮음            | 높음          | 3개         | 1순위    |
+| **Complete**          | 핵심 | 낮음            | 높음          | 3개         | 1순위    |
+| **Goods**             | 지원 | 낮음            | 높음          | 2개         | 1순위    |
+| **Product**           | 핵심 | 높음            | 높음          | 8개         | 1순위    |
+| **User**              | 핵심 | 중간            | 높음          | 10개        | 1순위    |
+| **CancelationReason** | 지원 | 중간            | 중간          | 1개         | 2순위    |
+| **Bump**              | 지원 | 낮음            | 중간          | 1개         | 2순위    |
+| **Dibs**              | 지원 | 낮음            | 중간          | 2개         | 2순위    |
+| **Notification**      | 지원 | 중간            | 중간          | 1개         | 2순위    |
+| **Review**            | 지원 | 낮음            | 중간          | 2개         | 2순위    |
+| **Category**          | 지원 | 낮음            | 중간          | 1개         | 2순위    |
+| **Cancelation**       | 이력 | 중              | 높음          | 2개         | 2순위    |
+| **Message**           | 이력 | 중간            | 높음          | 1개         | 2순위    |
+| **Chat**              | 핵심 | 높음            | 중간          | 3개         | 2순위    |
+| **Area**              | 이력 | 낮음            | 낮음          | 1개         | 3순위    |
+| **Image**             | 이력 | 낮음            | 낮음          | 1개         | 3순위    |
+| **ReportReason**      | 지원 | 낮음            | 낮음          | 1개         | 3순위    |
+| **Report**            | 이력 | 중간            | 낮음          | 3개         | 3순위    |
+| **Ban**               | 이력 | 낮음            | 낮음          | 2개         | 3순위    |
 
 ### 2.2 Entity 상속 구조
 
@@ -79,13 +79,13 @@ classDiagram
     User --|> BaseEntity
 
     %% 2순위 지원/이력 엔티티들
-    CancellationReason --|> BaseEntity
+    CancelationReason --|> BaseEntity
     Bump --|> BaseEntity
     Dibs --|> BaseEntity
     Notification --|> BaseEntity
     Review --|> BaseEntity
     Category --|> BaseEntity
-    Cancellation --|> BaseEntity
+    Cancelation --|> BaseEntity
     Message --|> BaseEntity
     Chat --|> BaseEntity
 
@@ -151,7 +151,7 @@ public class EntityName extends BaseEntity {
 | **Notification** | IDENTITY (Auto Increment, 알림 순서)              | 알림 발생 순서 보장                             | notification_id: 8001, 8002...         |
 | **Report**       | IDENTITY (Auto Increment, 신고 순서, unique 식별) | 신고 접수 순서 및 고유성 보장                   | report_id: 9001, 9002...               |
 | **Ban**          | IDENTITY (Auto Increment, unique 식별)            | 제재 이력 고유성 및 순서 관리                   | ban_id: 11001, 11002...                |
-| **Cancelation**  | IDENTITY (Reservation의 ID를 PK 겸 FK로 사용)     | 예약과 1:1 관계, 참조 무결성 보장               | cancellation_id = reservation_id       |
+| **Cancelation**  | IDENTITY (Auto Increment, 순차 증가)              | 취소 이력 고유성 관리                           | cancelation_id: 1                      |
 | **Category**     | IDENTITY (범주 별로 고정된 id 부여, unique 식별)  | 카테고리는 미리 정의된 고정값 사용              | category_id: 1(전자기기), 2(의류)...   |
 | **Area**         | IDENTITY (지역 별로 고정된 id 부여, unique 식별)  | 지역정보는 행정구역 기준 고정값                 | area_id: 1(서울), 2(부산)...           |
 | **ReportReason** | IDENTITY (사유 별로 고정된 id 부여)               | 신고사유는 미리 정의된 고정 코드값              | reason_id: 1(스팸), 2(욕설)...         |
@@ -437,7 +437,8 @@ public class EntityName extends BaseEntity {
 | --------------- | ------------ | ----------- | -------- | -------------------- | -------------------------------------------------------------------------------------- |
 | **review_id**   | BIGINT       | review_id   | NOT NULL | 리뷰의 고유 식별자   | 기본키로 사용, 자동 증가 값 권장, 중복 불가                                            |
 | **complete_id** | BIGINT       | complete_id | NULL     | 완료된 거래의 식별자 | 외래키로 사용, completes 테이블의 complete_id 참조                                     |
-| **user_id**     | BIGINT       | user_id     | NULL     | 리뷰 작성자의 식별자 | 외래키로 사용, users 테이블의 user_id 참조, NULL 허용 (익명 리뷰 또는 탈퇴한 사용자)   |
+| **buyer_id**    | BIGINT       | buyer_id    | NULL     | 구매자의 식별자      | 외래키로 사용, users 테이블의 user_id 참조, NULL 허용 (익명 거래 또는 탈퇴한 사용자)   |
+| **seller_id**   | BIGINT       | seller_id   | NULL     | 판매자의 식별자      | 외래키로 사용, users 테이블의 user_id 참조, NULL 허용 (익명 거래 또는 탈퇴한 사용자)   |
 | **rating**      | INT          | rating      | NOT NULL | 평점 점수            | 1~5점 범위 권장, 음수 값 허용하지 않음, 필수 입력 값                                   |
 | **content**     | VARCHAR(255) | content     | NULL     | 리뷰 내용            | 최대 255자까지 입력 가능, NULL 허용 (평점만 등록하는 경우), 특수문자, 줄바꿈 포함 가능 |
 
@@ -479,7 +480,8 @@ public class EntityName extends BaseEntity {
 
 | 필드명                    | 데이터 타입  | 컬럼명                | 제약조건 | 설명                 | 비즈니스 규칙                                                                                   |
 | ------------------------- | ------------ | --------------------- | -------- | -------------------- | ----------------------------------------------------------------------------------------------- |
-| **reservation_id**        | BIGINT       | reservation_id        | NOT NULL | 취소된 예약의 식별자 | 기본키로 사용, 외래키로 사용, reservations 테이블의 reservation_id 참조, 중복 불가              |
+| **cancelation_id**        | BIGINT       | reservation_id        | NOT NULL | 취소 식별자          | 기본키로 사용, 중복 불가                                                                        |
+| **reservation_id**        | BIGINT       | reservation_id        | NULL     | 취소된 예약의 식별자 | 외래키로 사용, reservations 테이블의 reservation_id 참조, 중복 불가                             |
 | **cancelation_reason_id** | INT          | cancelation_reason_id | NULL     | 취소 사유의 식별자   | 외래키로 사용, cancelation_reasons 테이블의 cancelation_reason_id 참조                          |
 | **canceler_id**           | BIGINT       | canceler_id           | NULL     | 취소 사유의 식별자   | 외래키로 사용, cancelation_reasons 테이블의 user_id 참조                                        |
 | **report_detail**         | VARCHAR(255) | report_detail         | NULL     | 취소 상세 내용       | 최대 255자까지 입력 가능, NULL 허용 (기본 취소 사유만 적용), 사용자가 직접 입력하는 상세 사유   |
@@ -621,72 +623,43 @@ public void setMember(Member member) {
 ### 7.1 BaseEntity 구현
 
 ```java
+@Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Getter
 public abstract class BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private String createdBy;
 
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @LastModifiedBy
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @Version
     @Column(name = "version")
-    private Long version;
-
-    // equals, hashCode는 id 기반으로 구현
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseEntity that = (BaseEntity) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    private Integer version;
 }
 ```
 
 ### 7.2 Auditing 설정
 
 ```java
-@Configuration
+@SpringBootApplication
 @EnableJpaAuditing
-public class JpaAuditingConfig {
+public class RookiejangterApplication {
 
-    @Bean
-    public AuditorAware<String> auditorProvider() {
-        return () -> {
-            // Spring Security에서 현재 사용자 정보 조회
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	public static void main(String[] args) {
+		SpringApplication.run(RookiejangterApplication.class, args);
+	}
 
-            if (authentication == null || !authentication.isAuthenticated()) {
-                return Optional.of("SYSTEM");
-            }
-
-            return Optional.of(authentication.getName());
-        };
-    }
 }
 ```
 

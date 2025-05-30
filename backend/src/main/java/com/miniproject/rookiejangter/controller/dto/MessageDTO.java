@@ -15,7 +15,6 @@ public class MessageDTO {
     @AllArgsConstructor
     @Builder
     public static class Request {
-
         @NotBlank(message = "내용은 필수입니다.")
         @Size(max = 255, message = "내용은 최대 255자까지 가능합니다.")
         private String content; // 메시지 전송 API 요청 바디
@@ -29,16 +28,18 @@ public class MessageDTO {
         private Long messageId;
         private Long chatRoomId;
         private Long senderId;
-        private String message;
+        private String content;
         private OffsetDateTime sentAt;
+        private Boolean isRead;
 
         public static Response fromEntity(Message message, Long chatRoomId) {
             return Response.builder()
                     .messageId(message.getMessageId())
                     .chatRoomId(chatRoomId)
                     .senderId(message.getUser().getUserId())
-                    .message(message.getContent())
+                    .content(message.getContent())
                     .sentAt(message.getSentAt() != null ? message.getSentAt().atOffset(ZoneOffset.UTC) : null)
+                    .isRead(false)
                     .build();
         }
     }
@@ -63,15 +64,17 @@ public class MessageDTO {
         public static class MessageResponse {
             private Long messageId;
             private Long senderId;
-            private String message;
+            private String content;
             private OffsetDateTime sentAt;
+            private Boolean isRead;
 
             public static MessageResponse fromEntity(Message message) {
                 return MessageResponse.builder()
                         .messageId(message.getMessageId())
                         .senderId(message.getUser().getUserId())
-                        .message(message.getContent())
+                        .content(message.getContent())
                         .sentAt(message.getSentAt() != null ? message.getSentAt().atOffset(ZoneOffset.UTC) : null)
+                        .isRead(false)
                         .build();
             }
         }
@@ -85,7 +88,7 @@ public class MessageDTO {
         private boolean success;
         private T data;
         private Object error;
-        private String message;
+        private String content;
         private OffsetDateTime timestamp = OffsetDateTime.now(ZoneOffset.UTC);
         private String requestId;
     }

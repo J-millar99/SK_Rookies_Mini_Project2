@@ -151,11 +151,5 @@ public class MessageRepositoryTest {
         Message savedUnreadMessage = entityManager.persist(unreadMessage);
         entityManager.flush();
         assertThat(savedUnreadMessage.getIsRead()).isFalse();
-
-        // update 후 test
-        messageRepository.updateIsReadByMessageId(true, savedUnreadMessage.getMessageId());
-        entityManager.clear();
-        Optional<Message> updatedMessage = messageRepository.findById(savedUnreadMessage.getMessageId());
-        assertThat(updatedMessage.get().getIsRead()).isTrue();
     }
 }

@@ -5,6 +5,14 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 public class CancelationReasonDTO {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Request {
+        @Size(max = 50, message = "취소 사유 타입은 최대 50자까지 가능합니다.")
+        private String cancelationReasonType;
+    }
 
     @Data
     @NoArgsConstructor

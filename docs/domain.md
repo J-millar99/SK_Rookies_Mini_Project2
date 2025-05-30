@@ -371,9 +371,10 @@ graph TD
 
 **주요 속성:**
 
-- `reservation_id`: 예약 식별자 (기본 키 및 외래 키, BIGINT, NOT NULL) - `reservations`테이블 참조
+- `cancelation_id`: 예약 식별자 (기본 키, BIGINT, NOT NULL) - `reservations`테이블 참조
+- `reservation_id`: 예약 식별자 (외래 키, BIGINT, NULL) - `reservations`테이블 참조
 - `cancelation_reason_id`: 취소 사유 식별자 (외래 키, INT, NULL) - `cancelation_reasons` 테이블 참조
-- `canceler_reason_id`: 취소자 식별자 (외래 키, BIGINT, NULL) - `users` 테이블 참조
+- `canceler_id`: 취소자 식별자 (외래 키, BIGINT, NULL) - `users` 테이블 참조
 - `canceled_at`: 취소 시간 (TIMESTAMP, NULL)
 
 **주요 행동 (메서드):**
@@ -423,7 +424,8 @@ graph TD
 
 - `review_id`: 리뷰 식별자 (기본 키, BIGINT, NOT NULL)
 - `complete_id`: 완료 식별자 (외래 키, BIGINT, NULL) - `completes` 테이블 참조 (관련 거래 완료 정보)
-- `user_id`: 작성자 식별자 (외래 키, BIGINT, NULL) - `users` 테이블 참조 (리뷰 작성자, 즉 구매자)
+- `buyer_id`: 작성자 식별자 (외래 키, BIGINT, NULL) - `users` 테이블 참조 (리뷰 작성자, 즉 구매자)
+- `seller_id`: 작성자 식별자 (외래 키, BIGINT, NULL) - `users` 테이블 참조 (리뷰 대상자, 즉 판매자)
 - `rating`: 평점 (INT, NOT NULL)
 - `content`: 리뷰 내용 (VARCHAR(255), NULL)
 - `written_at`: 리뷰 작성 시간 (TIMESTAMP, NULL)
@@ -433,7 +435,8 @@ graph TD
 - `createReview(completeId, userId, rating, content)`: 거래 완료 후 리뷰를 작성한다.
 - `updateReview(reviewId, rating, content)`: 작성된 리뷰를 수정한다.
 - `deleteReview(reviewId)`: 리뷰를 삭제한다.
-- `getReviewsByUserId(userId)`: 특정 사용자가 작성한 리뷰를 조회한다.
+- `getReviewsByUserId(userId)`: 특정 구매자가 작성한 리뷰를 조회한다.
+- `getReviewsBySellerId(userId)`: 특정 판매자가 대상이 되는 리뷰를 조회한다.
 - `getReviewByCompleteId(completeId)`: 특정 거래 완료건에 대한 리뷰를 조회한다.
 
 #### 3.2.13 Area (지역)
@@ -610,7 +613,8 @@ ERDiagram
     }
 
     CANCELATION {
-        bigint reservation_id PK_FK
+        bigint cancelation_id PK
+        bigint reservation_id FK
         int cancelation_reason_id FK
         timestamp canceled_at
     }
@@ -631,7 +635,8 @@ ERDiagram
     REVIEW {
         bigint review_id PK
         bigint complete_id FK
-        bigint user_id FK
+        bigint buyer_id FK
+        bigint seller_id FK
         int rating
         varchar content
     }

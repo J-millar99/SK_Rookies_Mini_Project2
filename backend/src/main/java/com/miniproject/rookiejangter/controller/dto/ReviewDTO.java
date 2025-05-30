@@ -21,7 +21,7 @@ public class ReviewDTO {
         private Integer rating;
 
         @Size(max = 255, message = "리뷰 내용은 최대 255자까지 가능합니다.")
-        private String comment;
+        private String content;
     }
 
     @Data
@@ -31,16 +31,20 @@ public class ReviewDTO {
     public static class Response {
         private Long reviewId;
         private Long tradeId;
+        private Long buyerId;
+        private Long sellerId;
         private Integer rating;
-        private String comment;
+        private String content;
         private OffsetDateTime createdAt;
 
         public static Response fromEntity(Review review) {
             return Response.builder()
                     .reviewId(review.getReviewId())
                     .tradeId(review.getComplete().getCompleteId()) // Complete ID를 tradeId로 사용
+                    .buyerId(review.getComplete().getBuyer().getUserId())
+                    .sellerId(review.getComplete().getSeller().getUserId())
                     .rating(review.getRating())
-                    .comment(review.getContent())
+                    .content(review.getContent())
                     .createdAt(review.getCreatedAt() != null ? review.getCreatedAt().atOffset(ZoneOffset.UTC) : null)
                     .build();
         }

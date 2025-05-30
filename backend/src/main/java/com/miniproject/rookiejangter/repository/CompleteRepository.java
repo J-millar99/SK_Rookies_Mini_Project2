@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface CompleteRepository extends JpaRepository <Complete, Long>{
+    Optional<Complete> findByCompleteId(Long completeId);
     Optional<Complete> findByProduct_ProductId(Long productId);
     List<Complete> findByBuyer_UserId(Long buyerId);
     List<Complete> findBySeller_UserId(Long sellerId);

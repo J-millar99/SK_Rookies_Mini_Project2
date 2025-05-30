@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface CancelationRepository extends JpaRepository<Cancelation, Long> {
-    Optional<Cancelation> findByReservationId(Long reservationId);
+    Optional<Cancelation> findByCancelationId(Long cancelationId);
+    Optional<Cancelation> findByReservation_ReservationId(Long reservationReservationId);
     List<Cancelation> findByCancelationReason_CancelationReasonId(Integer cancelationReasonCancelationReasonId);
 }

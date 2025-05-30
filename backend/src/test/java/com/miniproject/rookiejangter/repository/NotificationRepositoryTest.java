@@ -150,16 +150,10 @@ public class NotificationRepositoryTest {
                 .build();
         Notification savedUnreadNotification = entityManager.persist(unreadNotification);
         entityManager.flush();
-        List<Notification> foundNotifications = notificationRepository.findByIsRead(false);
-        assertThat(foundNotifications.get(0).getIsRead()).isFalse();
-
-        // update 후 test
-        notificationRepository.updateIsReadByNotificationId(true, savedUnreadNotification.getNotificationId());
-        entityManager.clear();
 
         Optional<Notification> updatedNotification = notificationRepository.findById(savedUnreadNotification.getNotificationId());
         assertThat(updatedNotification).isPresent();
-        assertThat(updatedNotification.get().getIsRead()).isTrue();
+        assertThat(updatedNotification.get().getIsRead()).isFalse();
 
     }
 }

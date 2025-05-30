@@ -18,7 +18,6 @@ public class CancelationReason {
     @Column(name = "cancelation_reason_id")
     private Integer cancelationReasonId;
 
-    @Size(max = 50, message = "취소 사유 타입은 최대 50자까지 가능합니다.")
     @Column(name = "cancelation_reason_type", length = 50)
     private String cancelationReasonType;
 

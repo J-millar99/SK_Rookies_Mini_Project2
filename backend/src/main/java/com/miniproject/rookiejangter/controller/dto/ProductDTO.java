@@ -103,7 +103,7 @@ public class ProductDTO {
     public static class Response {
         private Long id;
         private String title;
-        private String description;
+        private String content;
         private Integer price;
         private String categoryName;
         private String status;
@@ -123,7 +123,7 @@ public class ProductDTO {
             return Response.builder()
                     .id(product.getProductId())
                     .title(product.getTitle())
-                    .description(product.getContent())
+                    .content(product.getContent())
                     .price(product.getPrice())
                     .categoryName(product.getCategory() != null ? product.getCategory().getCategoryName() : null)
                     .status(product.getIsCompleted() != null && product.getIsCompleted() ? "COMPLETED" :

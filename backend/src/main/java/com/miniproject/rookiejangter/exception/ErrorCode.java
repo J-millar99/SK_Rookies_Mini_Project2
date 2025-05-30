@@ -33,7 +33,10 @@ public enum ErrorCode {
     CHATROOM_NOT_FOUND("채팅방을 찾을 수 없습니다. ID: %s", HttpStatus.NOT_FOUND),
     SELF_TRADE_NOT_ALLOWED("자신에게 거래 요청을 할 수 없습니다", HttpStatus.BAD_REQUEST),
     INVALID_PRODUCT_STATUS("유효하지 않은 상품 상태입니다: %s", HttpStatus.BAD_REQUEST),
-    INVALID_TRADE_STATUS("유효하지 않은 거래 상태입니다: %s", HttpStatus.BAD_REQUEST);
+    INVALID_TRADE_STATUS("유효하지 않은 거래 상태입니다: %s", HttpStatus.BAD_REQUEST),
+    MESSAGE_NOT_FOUND("메시지를 찾을 수 없습니다. ID: %s", HttpStatus.NOT_FOUND),
+    REVIEW_NOT_FOUND("리뷰를 찾을 수 없습니다. ID: %s", HttpStatus.NOT_FOUND)
+    ;
 
     private final String messageTemplate;
     private final HttpStatus httpStatus;

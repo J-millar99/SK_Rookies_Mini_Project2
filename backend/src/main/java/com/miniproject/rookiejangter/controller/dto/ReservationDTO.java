@@ -32,6 +32,7 @@ public class ReservationDTO {
         private Long tradeId;
         private Long productId;
         private Long buyerId;
+        private Long sellerId;
         private Reservation.TradeStatus status;
         private OffsetDateTime requestedAt;
         private OffsetDateTime updatedAt;
@@ -41,6 +42,7 @@ public class ReservationDTO {
                     .tradeId(reservation.getReservationId())
                     .productId(reservation.getProduct().getProductId())
                     .buyerId(reservation.getBuyer().getUserId())
+                    .sellerId(reservation.getSeller().getUserId())
                     .status(reservation.getStatus())
                     .requestedAt(reservation.getCreatedAt() != null ? reservation.getCreatedAt().atOffset(ZoneOffset.UTC) : null)
                     .updatedAt(reservation.getUpdatedAt() != null ? reservation.getUpdatedAt().atOffset(ZoneOffset.UTC) : null)

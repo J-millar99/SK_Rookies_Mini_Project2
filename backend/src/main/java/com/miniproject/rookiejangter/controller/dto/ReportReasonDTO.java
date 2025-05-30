@@ -1,9 +1,19 @@
 package com.miniproject.rookiejangter.controller.dto;
 
 import com.miniproject.rookiejangter.entity.ReportReason;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 public class ReportReasonDTO {
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Request {
+        @Size(max = 50, message = "신고 사유 타입은 최대 50자까지 가능합니다.")
+        private String reportReasonType;
+    }
 
     @Data
     @NoArgsConstructor

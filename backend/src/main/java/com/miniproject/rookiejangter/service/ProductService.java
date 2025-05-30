@@ -213,7 +213,7 @@ public class ProductService {
         return ProductDTO.Response.builder()
                 .id(product.getProductId())
                 .title(product.getTitle())
-                .description(product.getContent())
+                .content(product.getContent())
                 .price(product.getPrice())
                 .categoryName(product.getCategory() != null ? product.getCategory().getCategoryName() : null)
                 .status(product.getIsCompleted() != null && product.getIsCompleted() ? "COMPLETED" :

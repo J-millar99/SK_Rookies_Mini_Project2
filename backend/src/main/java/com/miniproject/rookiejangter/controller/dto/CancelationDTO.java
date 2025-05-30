@@ -25,6 +25,7 @@ public class CancelationDTO {
     @AllArgsConstructor
     @Builder
     public static class Response {
+        private Long cancelationId;
         private Long reservationId;
         private Integer cancelationReasonId;
         private String cancelationReasonType;
@@ -33,7 +34,8 @@ public class CancelationDTO {
 
         public static Response fromEntity(Cancelation cancelation) {
             return Response.builder()
-                    .reservationId(cancelation.getReservationId())
+                    .cancelationId(cancelation.getCancelationId())
+                    .reservationId(cancelation.getReservation().getReservationId())
                     .cancelationReasonId(cancelation.getCancelationReason().getCancelationReasonId())
                     .cancelationReasonType(cancelation.getCancelationReason().getCancelationReasonType())
                     .cancelationDetail(cancelation.getCancelationDetail())

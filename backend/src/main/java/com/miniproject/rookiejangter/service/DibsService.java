@@ -55,9 +55,12 @@ public class DibsService {
 
     @Transactional(readOnly = true)
     public DibsDTO.Response getDibsStatus(Long userId, Long productId) {
-        boolean isLiked = dibsRepository.existsByUser_UserIdAndProduct_ProductId(userId, productId);
+        // 먼저 Product 존재 여부를 확인합니다.
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다: " + productId));
+
+        // Product가 존재할 경우에만 찜 상태를 확인합니다.
+        boolean isLiked = dibsRepository.existsByUser_UserIdAndProduct_ProductId(userId, productId);
 
         if (isLiked) {
             List<Dibs> dibsForProduct = dibsRepository.findByProduct_ProductId(productId);
@@ -67,9 +70,8 @@ public class DibsService {
             if (userDibsOpt.isPresent()) {
                 return DibsDTO.Response.fromEntity(userDibsOpt.get(), true);
             }
-            // 이론상 existsByUser_UserIdAndProduct_ProductId가 true면 여기서 찾아야 하지만, 동시성 문제 등 예외 케이스 방어
-            Dibs tempDibs = Dibs.builder().product(product).addedAt(LocalDateTime.now()).build(); // 임시로 addedAt 설정
-            return DibsDTO.Response.fromEntity(tempDibs, true); // isLiked는 true지만 정확한 dibs 객체를 못찾은 경우
+            Dibs tempDibs = Dibs.builder().product(product).addedAt(LocalDateTime.now()).build();
+            return DibsDTO.Response.fromEntity(tempDibs, true);
         } else {
             Dibs tempDibs = Dibs.builder().product(product).build();
             return DibsDTO.Response.fromEntity(tempDibs, false);

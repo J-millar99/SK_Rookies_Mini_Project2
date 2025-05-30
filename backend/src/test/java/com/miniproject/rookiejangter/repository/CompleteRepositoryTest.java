@@ -92,6 +92,13 @@ public class CompleteRepositoryTest {
     }
 
     @Test
+    void findByCompleteId() {
+        Optional<Complete> foundComplete = completeRepository.findByCompleteId(complete1.getCompleteId());
+        assertThat(foundComplete).isPresent();
+        assertThat(foundComplete.get().getCompleteId()).isEqualTo(1L);
+    }
+
+    @Test
     void findByProductId() {
         Optional<Complete> foundComplete = completeRepository.findById(product1.getProductId());
         assertThat(foundComplete).isPresent();
