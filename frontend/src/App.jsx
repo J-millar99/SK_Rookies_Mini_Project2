@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import MyPage from './pages/MyPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import ProductRegisterPage from './pages/ProductRegisterPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import Header from './components/Header';
 import { Box } from '@mui/material';
@@ -26,23 +27,28 @@ function App() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '1000vh' }}>
       <Header />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          mt: '10px',
-          px: 0,
-        }}
-      >
+      <Box component="main" sx={{ flexGrow: 1, mt: '10px', px: 0 }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/users/profile" element={<MyPage />} />
+          <Route path="/users/profile"
+            element={
+              <ProtectedRoute>
+                <MyPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/products/:product_id" element={<ProductDetailPage />} />
-          <Route path="/products/register" element={<ProductRegisterPage />} />
+          <Route path="/products/register"
+            element={
+              <ProtectedRoute>
+                <ProductRegisterPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Box>
     </Box>
