@@ -14,19 +14,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setIdentityInfo, clearAuthState } from '../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { getAreas } from '../api/area'; // 지역 리스트 API
+import { getAreas } from '../api/area';
 
 const MyPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { identityInfo } = useSelector((state) => state.auth);
+
   const [editing, setEditing] = useState(false);
   const [areas, setAreas] = useState([]);
-
   const [formData, setFormData] = useState({
-    userName: identityInfo?.userName || '',
-    phone: identityInfo?.phone || '',
-    areaId: identityInfo?.area?.areaId || '',
+    userName: '',
+    phone: '',
+    areaId: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -34,6 +34,25 @@ const MyPage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await axios.get('http://localhost:8080/api/users/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        dispatch(setIdentityInfo(res.data));
+        setFormData({
+          userName: res.data.userName,
+          phone: res.data.phone,
+          areaId: res.data.area?.areaId || '',
+        });
+      } catch (e) {
+        console.error('프로필 불러오기 실패', e);
+      }
+    };
+
     const fetchAreas = async () => {
       try {
         const res = await getAreas();
@@ -42,8 +61,10 @@ const MyPage = () => {
         console.error('지역 목록 로딩 실패', e);
       }
     };
+
+    fetchProfile();
     fetchAreas();
-  }, []);
+  }, [dispatch]);
 
   const validateField = (name, value) => {
     let msg = '';
@@ -105,7 +126,7 @@ const MyPage = () => {
         {
           userName: formData.userName,
           phone: formData.phone,
-          areaId: formData.areaId
+          areaId: formData.areaId,
         },
         {
           headers: {
@@ -140,7 +161,7 @@ const MyPage = () => {
       navigate('/login');
     } catch (error) {
       console.error('계정 삭제 실패:', error);
-      alert('비밀번호가 일치하지 않거나 삭제에 실패했습니다.');
+      alert('비밀번호가 일치하지 않아서 삭제에 실패했습니다.');
     }
   };
 
