@@ -1,6 +1,11 @@
 export function FormatTime(createdAt) {
   const now = new Date();
-  const created = new Date(createdAt);
+  // 한국시간이 Z(UTC)로 잘못 내려올 때 9시간 빼기 (임시방편)
+  const created = new Date(new Date(createdAt).getTime() - 9 * 60 * 60 * 1000);
+
+  const diffMs = now.getTime() - created.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const safeDiffSec = diffSec < 0 ? 0 : diffSec;
 
   const isSameDay =
     now.getFullYear() === created.getFullYear() &&
@@ -8,10 +13,8 @@ export function FormatTime(createdAt) {
     now.getDate() === created.getDate();
 
   if (isSameDay) {
-    const diffMs = now - created;
-    const diffSec = Math.floor(diffMs / 1000);
-    if (diffSec < 60) return `${diffSec}초 전`;
-    const diffMin = Math.floor(diffSec / 60);
+    if (safeDiffSec < 60) return `${safeDiffSec}초 전`;
+    const diffMin = Math.floor(safeDiffSec / 60);
     if (diffMin < 60) return `${diffMin}분 전`;
     const diffHour = Math.floor(diffMin / 60);
     return `${diffHour}시간 전`;

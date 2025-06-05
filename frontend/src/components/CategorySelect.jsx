@@ -3,11 +3,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
-const CategorySelect = ({ value, onChange, options }) => {
+const CategorySelect = ({ value, onChange, options, showIcon = true  }) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
     // 현재 선택된 카테고리 라벨 찾기
-    const selectedLabel = options.find(opt => opt.value === value)?.label || '카테고리';
+    const selectedLabel = options.find(opt => opt.value === value)?.label || '카테고리 선택';
+    const selectedIcon = options.find(opt => opt.value === value)?.icon;
 
     const handleOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -28,28 +29,40 @@ const CategorySelect = ({ value, onChange, options }) => {
     };
 
     return (
-        <div style={{ display: 'inline-block', paddingBottom: 12 }}>
+        <div style={{ display: 'inline-block', paddingBottom: showIcon ? 12 : 0, width: showIcon ? undefined : '100%' }}>
             <button
+                ref={el => (showIcon ? null : (CategorySelect._buttonRef = el))}
                 style={{
-                    width: 36,
-                    height: 36,
-                    padding: 0,
+                    width: showIcon ? 36 : '100%',
+                    height: showIcon ? 40 : 60,
+                    padding: showIcon ? 0 : '6px 16px',
                     marginTop: 3,
-                    border: 'none',
+                    border: showIcon ? 'none' : '1.5px solid #bdbdbd',
+                    borderRadius: showIcon ? 0 : 5,
                     background: 'none',
+                    backgroundColor: 'none',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     boxShadow: 'none',
+                    transition: 'border-color 0.2s',
                 }}
                 type="button"
                 aria-haspopup="true"
                 aria-controls={anchorEl ? "category-menu" : undefined}
                 aria-expanded={Boolean(anchorEl)}
                 onClick={handleOpen}
+                onMouseOver={e => { if (!showIcon) e.currentTarget.style.borderColor = '#1976d2'; }}
+                onMouseOut={e => { if (!showIcon) e.currentTarget.style.borderColor = '#bdbdbd'; }}
             >
-                <MenuIcon fontSize="large" />
+                {showIcon ? (
+                    <MenuIcon fontSize="large" />
+                ) : (
+                    <span style={{ fontWeight: 600, fontSize: 16, color: value ? "#1976d2" : "#888", width: '100%', textAlign: 'center' }}>
+                        {selectedLabel}
+                    </span>
+                )}
             </button>
             <Menu
                 id="category-menu"
@@ -58,6 +71,9 @@ const CategorySelect = ({ value, onChange, options }) => {
                 onClose={handleClose}
                 MenuListProps={{
                     'aria-labelledby': 'category-menu-button',
+                }}
+                PaperProps={{
+                    style: showIcon ? {} : { minWidth: anchorEl ? anchorEl.offsetWidth : undefined }
                 }}
             >
                 <MenuItem
@@ -69,6 +85,7 @@ const CategorySelect = ({ value, onChange, options }) => {
                         fontSize: 15,
                     }}
                 >
+                    {showIcon && selectedIcon ? <span style={{ marginRight: 8 }}>{selectedIcon}</span> : null}
                     {selectedLabel}
                 </MenuItem>
                 {options.map(opt => (
@@ -82,6 +99,7 @@ const CategorySelect = ({ value, onChange, options }) => {
                             fontWeight: value === opt.value ? 700 : 400,
                         }}
                     >
+                        {showIcon && opt.icon ? <span style={{ marginRight: 8 }}>{opt.icon}</span> : null}
                         {opt.label}
                     </MenuItem>
                 ))}

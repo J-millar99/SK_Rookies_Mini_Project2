@@ -5,7 +5,7 @@ const CARD_WIDTH = 210;
 const CARD_HEIGHT = 284;
 const IMAGE_HEIGHT = 200;
 
-const ProductsList = ({ products, formatTime }) => {
+const ProductsList = ({ products, formatTime, onProductClick }) => {
   return (
     <Grid
       container
@@ -23,10 +23,12 @@ const ProductsList = ({ products, formatTime }) => {
           key={product.id}
           sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
         >
-          <ProductCard
-            product={product}
-            formatTime={formatTime}
-          />
+          <div style={{ width: "100%" }} onClick={() => onProductClick && onProductClick(product.id)}>
+            <ProductCard
+              product={product}
+              formatTime={formatTime}
+            />
+          </div>
         </Grid>
       ))}
     </Grid>

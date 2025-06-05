@@ -50,6 +50,14 @@ const HomePage = () => {
       >
         상품 등록
       </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ ml: 2 }}
+        onClick={() => navigate('/my-products')}
+      >
+        내가 올린 상품
+      </Button>
       <Typography variant="h5" sx={{ mt: 4, mb: 2 }}>오늘의 상품 추천</Typography>
         <InfiniteScroll
           dataLength={products.length}

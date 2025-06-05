@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { products } from '../constants/ExpProductDB'; // 예시 데이터베이스
-// import axios from "axios";
+import axios from "axios";
 import { Box, Typography, Divider, Grid } from '@mui/material';
 import NotFound from '../err/NotFound';
 import { FormatTime } from '../utils/FormatTime';
@@ -14,10 +13,12 @@ const ProductDetailPage = () => {
   const { product_id } = useParams();
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.identityInfo); // 로그인한 유저 정보
-  const product = products.find((p) => String(p.id) === String(product_id)); // 백엔드 연동 시 삭제
   const [imgIdx, setImgIdx] = useState(0);
   const authState = useSelector((state) => state.auth);
   console.log("🧪 auth state:", authState);
+
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     console.log('🔍 currentUser:', currentUser);
@@ -30,23 +31,21 @@ const ProductDetailPage = () => {
   }, []);
 
   // 백엔드 연동 시:
-  // const [product, setProduct] = useState(null);
-  // const [loading, setLoading] = useState(true);
-  // useEffect(() => {
-  //   axios.get(`/api/products/${product_id}`)
-  //     .then(res => {
-  //       setProduct(res.data.data);
-  //       setLoading(false);
-  //     })
-  //     .catch(err => {
-  //       setLoading(false);
-  //       if (err.response && err.response.status === 404) {
-  //         navigate("/err/NotFound");
-  //       }
-  //     });
-  // }, [product_id, navigate]);
+  useEffect(() => {
+    axios.get(`http://localhost:8080/api/products/${product_id}`)
+      .then(res => {
+        setProduct(res.data.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setLoading(false);
+        if (err.response && err.response.status === 404) {
+          navigate("/err/NotFound");
+        }
+      });
+  }, [product_id, navigate]);
 
-  // if (loading) return <div>로딩 중...</div>;
+  if (loading) return <div>로딩 중...</div>;
   if (!product) return <NotFound />;
 
   const images = product.images || [];
@@ -70,7 +69,7 @@ const ProductDetailPage = () => {
     alert('신고 처리가 완료되었습니다.');
   };
 
-  const isOwner = currentUser?.user_id === product.seller?.id;
+  const isOwner = currentUser?.id === product.seller?.id;
 
   return (
     <Box sx={{ px: 5, py: 4 }}>

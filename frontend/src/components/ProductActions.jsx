@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // 추가
+import { Button } from "@mui/material";
 
 const buttonStyle = {
   width: 200,
@@ -67,25 +68,37 @@ const ProductActions = ({ productId, isInitiallyLiked = false }) => {
         fontWeight: 700,
       }}
     >
-      <button
-        style={{
+      <Button
+        variant={isLiked ? "contained" : "outlined"}
+        color={isLiked ? "error" : "inherit"}
+        sx={{
           ...buttonStyle,
           border: isLiked ? '1px solid #EA002C' : '1px solid #e0e0e0',
           background: isLiked ? '#EA002C' : '#fff',
           color: isLiked ? '#fff' : '#222',
           opacity: loading ? 0.6 : 1,
+          fontSize: 22,
+          fontWeight: 700,
         }}
         onClick={handleWishlist}
         disabled={loading}
       >
         {isLiked ? "찜 취소" : "찜하기"}
-      </button>
-      <button style={{ ...buttonStyle, border: '1px solid #1976d2', background: '#1976d2', color: '#fff' }}>
+      </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ ...buttonStyle, fontSize: 22, fontWeight: 700 }}
+      >
         대화하기
-      </button>
-      <button style={{ ...buttonStyle, border: '1px solid #43a047', background: '#43a047', color: '#fff' }}>
+      </Button>
+      <Button
+        variant="contained"
+        color="success"
+        sx={{ ...buttonStyle, fontSize: 22, fontWeight: 700 }}
+      >
         바로구매
-      </button>
+      </Button>
     </div>
   );
 };

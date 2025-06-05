@@ -4,6 +4,7 @@ import { loginUser } from '../api/auth';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore'; // Zustand
 import axios from 'axios';
+import FormErrorSnackbar from "./FormErrorSnackbar";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ const LoginForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [openError, setOpenError] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore(); // Zustand
 
@@ -88,6 +90,19 @@ const LoginForm = () => {
         // ✅ Axios 기본 헤더에 토큰 설정
         axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.accessToken}`;
 
+        // 로그인 후 계정 상태 확인
+        try {
+          const profileRes = await axios.get('http://localhost:8080/api/users/profile');
+          if (profileRes.data && profileRes.data.isBanned) {
+            setErrors(prev => ({ ...prev, submit: '해당 계정은 잠금된 상태입니다.' }));
+            setOpenError(true);
+            setLoading(false);
+            return;
+          }
+        } catch (profileErr) {
+          // 프로필 조회 실패 시 무시하고 계속 진행
+        }
+
         // Zustand에도 저장 (선택사항)
         login(res.data.accessToken, res.data.userName);
       }
@@ -156,6 +171,11 @@ const LoginForm = () => {
           <Typography>{errors.submit}</Typography>
         </Box>
       )}
+      <FormErrorSnackbar
+        open={openError}
+        message={errors.submit}
+        onClose={() => setOpenError(false)}
+      />
     </Box>
   );
 };
