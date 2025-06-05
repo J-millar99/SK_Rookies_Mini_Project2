@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // Common errors - 공통으로 사용할 수 있는 일반적인 에러 코드
 //    VALIDATION_ERROR("입력값 검증 실패: %s", HttpStatus.BAD_REQUEST),
-//    INVALID_CREDENTIALS("인증 정보 오류", HttpStatus.UNAUTHORIZED),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "C009", "인증 정보 오류"),
 //    TOKEN_EXPIRED("토큰이 만료되었습니다", HttpStatus.UNAUTHORIZED),
 //    ACCESS_DENIED("권한이 없습니다", HttpStatus.FORBIDDEN),
 //    RESOURCE_NOT_FOUND("%s을(를) 찾을 수 없습니다. %s: %s", HttpStatus.NOT_FOUND),
