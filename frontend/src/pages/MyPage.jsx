@@ -1,27 +1,112 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Typography,
+  Box,
+} from '@mui/material';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setIdentityInfo, clearAuthState } from '../features/auth/authSlice';
-import useAuthStore from '../store/authStore';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
+import { getAreas } from '../api/area'; // 지역 리스트 API
 
 const MyPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { identityInfo } = useSelector((state) => state.auth);
-  const [name, setName] = useState(identityInfo?.name || '');
-  const [phone, setPhone] = useState(identityInfo?.phone || '');
-  const [region, setRegion] = useState(identityInfo?.region || '');
   const [editing, setEditing] = useState(false);
+  const [areas, setAreas] = useState([]);
+
+  const [formData, setFormData] = useState({
+    userName: identityInfo?.userName || '',
+    phone: identityInfo?.phone || '',
+    areaId: identityInfo?.area?.areaId || '',
+  });
+
+  const [errors, setErrors] = useState({});
   const [password, setPassword] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    const fetchAreas = async () => {
+      try {
+        const res = await getAreas();
+        setAreas(res.data);
+      } catch (e) {
+        console.error('지역 목록 로딩 실패', e);
+      }
+    };
+    fetchAreas();
+  }, []);
+
+  const validateField = (name, value) => {
+    let msg = '';
+    switch (name) {
+      case 'userName':
+        if (!value) msg = '이름은 필수입니다.';
+        else if (value.length < 2 || value.length > 12) msg = '이름은 2~12자 이내여야 합니다.';
+        else if (!/^[가-힣a-zA-Z]+$/.test(value)) msg = '한글 또는 영문만 입력 가능합니다.';
+        break;
+      case 'phone':
+        if (!value) msg = '전화번호는 필수입니다.';
+        else if (!/^010-\d{4}-\d{4}$/.test(value)) msg = '010-XXXX-XXXX 형식으로 입력해주세요.';
+        break;
+      case 'areaId':
+        if (!value) msg = '지역을 선택해주세요.';
+        break;
+      default:
+        break;
+    }
+    return msg;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, value),
+    }));
+  };
+
+  const isFormValid = useMemo(() => {
+    return (
+      formData.userName &&
+      formData.phone &&
+      formData.areaId &&
+      !Object.values(errors).some((e) => e)
+    );
+  }, [formData, errors]);
+
   const handleSave = async () => {
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const err = validateField(key, formData[key]);
+      if (err) newErrors[key] = err;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('accessToken');
       const response = await axios.put(
         'http://localhost:8080/api/users/profile',
-        { name, phone, region },
+        {
+          userName: formData.userName,
+          phone: formData.phone,
+          areaId: formData.areaId
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -46,11 +131,10 @@ const MyPage = () => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        data: { password }
+        data: { password },
       });
 
       alert('계정이 삭제되었습니다.');
-
       dispatch(clearAuthState());
       useAuthStore.getState().logout();
       navigate('/login');
@@ -61,60 +145,95 @@ const MyPage = () => {
   };
 
   return (
-    <div>
-      <h2>마이페이지</h2>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        마이페이지
+      </Typography>
+
       {editing ? (
-        <div>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="이름"
+        <>
+          <TextField
+            fullWidth
+            label="이름"
+            name="userName"
+            value={formData.userName}
+            onChange={handleChange}
+            error={!!errors.userName}
+            helperText={errors.userName}
+            sx={{ mb: 2 }}
           />
-          <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="전화번호"
+          <TextField
+            fullWidth
+            label="전화번호"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            error={!!errors.phone}
+            helperText={errors.phone}
+            sx={{ mb: 2 }}
           />
-          <input
-            type="text"
-            value={region}
-            onChange={(e) => setRegion(e.target.value)}
-            placeholder="지역"
-          />
-          <button onClick={handleSave}>저장</button>
-          <button onClick={() => setEditing(false)}>취소</button>
-        </div>
+          <FormControl fullWidth error={!!errors.areaId} sx={{ mb: 2 }}>
+            <InputLabel>지역</InputLabel>
+            <Select
+              name="areaId"
+              value={formData.areaId}
+              onChange={handleChange}
+              label="지역"
+            >
+              {areas.map((area) => (
+                <MenuItem key={area.areaId} value={area.areaId}>
+                  {area.areaName}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.areaId && (
+              <Typography variant="caption" color="error">
+                {errors.areaId}
+              </Typography>
+            )}
+          </FormControl>
+          <Button variant="contained" onClick={handleSave} disabled={!isFormValid}>
+            저장
+          </Button>{' '}
+          <Button variant="outlined" onClick={() => setEditing(false)}>
+            취소
+          </Button>
+        </>
       ) : (
-        <div>
-          <p>이름: {identityInfo?.name}</p>
-          <p>전화번호: {identityInfo?.phone}</p>
-          <p>지역: {identityInfo?.region}</p>
-          <button onClick={() => setEditing(true)}>수정</button>
-        </div>
+        <>
+          <Typography>이름: {identityInfo?.userName}</Typography>
+          <Typography>전화번호: {identityInfo?.phone}</Typography>
+          <Typography>지역: {identityInfo?.area?.areaName}</Typography>
+          <Button variant="contained" sx={{ mt: 2 }} onClick={() => setEditing(true)}>
+            수정
+          </Button>
+        </>
       )}
 
-      <hr />
+      <hr style={{ margin: '20px 0' }} />
 
       {!showDeleteConfirm ? (
-        <button onClick={() => setShowDeleteConfirm(true)} style={{ color: 'red' }}>
+        <Button onClick={() => setShowDeleteConfirm(true)} color="error">
           계정 삭제
-        </button>
+        </Button>
       ) : (
-        <div>
-          <p>계정을 삭제하려면 비밀번호를 입력하세요:</p>
-          <input
+        <Box sx={{ mt: 2 }}>
+          <Typography>계정을 삭제하려면 비밀번호를 입력하세요:</Typography>
+          <TextField
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="비밀번호"
+            fullWidth
+            sx={{ my: 2 }}
           />
-          <button onClick={handleDeleteAccount} style={{ color: 'red' }}>삭제 확인</button>
-          <button onClick={() => setShowDeleteConfirm(false)}>취소</button>
-        </div>
+          <Button onClick={handleDeleteAccount} color="error" variant="contained">
+            삭제 확인
+          </Button>{' '}
+          <Button onClick={() => setShowDeleteConfirm(false)}>취소</Button>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 
