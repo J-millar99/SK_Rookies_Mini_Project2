@@ -61,6 +61,16 @@ public class AuthController {
         }
     }
 
+    // 계정 탈퇴
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteCurrentUserWithPassword(
+            @Valid @RequestBody UserDTO.DeleteRequest request,
+            Authentication authentication) {
+        Long userId = Long.parseLong(authentication.getName());
+        userService.deleteUserWithPassword(userId, request.getPassword());
+        return ResponseEntity.noContent().build();
+    }
+
     // 토큰 갱신
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(@RequestBody TokenRefreshRequest request) {

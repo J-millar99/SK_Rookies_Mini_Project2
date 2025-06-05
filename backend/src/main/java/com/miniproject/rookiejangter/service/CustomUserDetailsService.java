@@ -5,6 +5,7 @@ import com.miniproject.rookiejangter.exception.BusinessException;
 import com.miniproject.rookiejangter.exception.ErrorCode;
 import com.miniproject.rookiejangter.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,8 +17,8 @@ import java.util.Collections;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-
-    private final UserRepository userRepository;
+//    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {

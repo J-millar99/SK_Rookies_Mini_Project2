@@ -56,7 +56,7 @@ public class DibsService {
                 .isLiked(isNowLiked)
                 .build();
     }
-    
+
     // @Transactional
     // public DibsDTO.Response addDibs(Long userId, Long productId) {
     //     if (dibsRepository.existsByUser_UserIdAndProduct_ProductId(userId, productId)) {

@@ -161,11 +161,16 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    // username 기반 삭제 메서드 (기존 호환성을 위해 유지)
     @Transactional
-    public void deleteUser(String username) {
-        User user = userRepository.findByUserName(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, username));
+    public void deleteUserWithPassword(Long userId, String password) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, String.valueOf(userId)));
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BusinessException(ErrorCode.PASSWORD_MISMATCH, "비밀번호가 일치하지 않습니다.");
+        }
+
         userRepository.delete(user);
     }
 

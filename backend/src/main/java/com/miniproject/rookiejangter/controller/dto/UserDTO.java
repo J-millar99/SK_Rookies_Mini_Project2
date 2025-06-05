@@ -103,6 +103,15 @@ public class UserDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class DeleteRequest {
+        @NotBlank(message = "비밀번호는 필수입니다.")
+        private String password;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Response {
         private Long id;
         private AreaInfo area;

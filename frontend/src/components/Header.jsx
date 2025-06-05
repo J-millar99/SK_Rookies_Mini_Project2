@@ -53,7 +53,7 @@ const Header = () => {
                 <Button color="inherit" onClick={handleLogout}>
                   로그아웃
                 </Button>
-                <Button color="inherit" onClick={() => navigate('/mypage')}>
+                <Button color="inherit" onClick={() => navigate('/users/profile')}>
                   마이페이지
                 </Button>
               </>
