@@ -1,12 +1,19 @@
-// src/components/PhoneVerification.jsx
 import React, { useEffect, useState } from "react";
-import { Checkbox, FormControlLabel, Button } from "@mui/material";
+import { Checkbox, FormControlLabel, Button, Alert } from "@mui/material";
 import axios from "axios";
 import { PORTONE_STORE_ID, PORTONE_CHANNEL_KEY, PORTONE_REDIRECT_URL } from "../utils/portone";
+import FormSnackbar from "./FormSnackbar";
 
 const PhoneVerification = ({ onSuccess }) => {
     const [verified, setVerified] = useState(false);
     const [serverMessage, setServerMessage] = useState(null); // 서버 응답 메시지 표시용
+
+    // snackbar 상태 추가
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: "",
+        severity: "error",
+    });
 
     useEffect(() => {
         // 포트원 SDK 로드
@@ -22,7 +29,14 @@ const PhoneVerification = ({ onSuccess }) => {
     }, []);
 
     const handleVerification = () => {
-        if (!window.IMP) return alert("포트원 SDK가 아직 로드되지 않았습니다.");
+        if (!window.IMP) {
+            setSnackbar({
+                open: true,
+                message: "포트원 SDK가 아직 로드되지 않았습니다.",
+                severity: "error",
+            });
+            return;
+        }
 
         window.IMP.certification(
             {
@@ -53,10 +67,18 @@ const PhoneVerification = ({ onSuccess }) => {
                     })
                     .catch((err) => {
                         console.error("서버 전송 오류:", err);
-                        alert("서버로 인증 정보를 보내는 데 실패했습니다.");
+                        setSnackbar({
+                            open: true,
+                            message: "서버로 인증 정보를 보내는 데 실패했습니다.",
+                            severity: "error",
+                        });
                     });
                 } else {
-                    alert("본인인증 실패: " + rsp.error_msg);
+                    setSnackbar({
+                        open: true,
+                        message: "본인인증 실패: " + rsp.error_msg,
+                        severity: "error",
+                    });
                 }
             }
         );
@@ -76,6 +98,12 @@ const PhoneVerification = ({ onSuccess }) => {
                 {serverMessage}
                 </Alert>
             )}
+            <FormSnackbar
+                open={snackbar.open}
+                message={snackbar.message}
+                severity={snackbar.severity}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+            />
         </div>
     );
 };

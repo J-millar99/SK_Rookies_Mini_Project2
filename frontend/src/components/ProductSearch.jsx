@@ -7,7 +7,8 @@ import { getCategories } from '../api/category';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PriceToggleButton from './PriceToggleButton';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Button, IconButton, Paper } from '@mui/material';
+import { Box, Button, IconButton, Paper, useTheme } from '@mui/material';
+import FormSnackbar from './FormSnackbar'; // 추가
 
 const ProductSearch = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,8 +20,16 @@ const ProductSearch = () => {
   const [showPriceInputs, setShowPriceInputs] = useState(false);
   const [categories, setCategories] = useState([]);
 
+  // snackbar 상태 추가
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'error',
+  });
+
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
 
   React.useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -35,15 +44,14 @@ const ProductSearch = () => {
       try {
         const responseData = await getCategories();
         if (responseData && Array.isArray(responseData.data)) {
-          // '전체' 옵션을 추가하고 백엔드에서 받아온 카테고리 목록을 병합
-          setCategories([{ categoryName: '전체', categoryId: '' }, ...responseData.data]); // categoryName으로 변경
+          setCategories([{ categoryName: '전체', categoryId: '' }, ...responseData.data]);
         } else {
           console.error('Unexpected categories data format:', responseData);
-          setCategories([{ categoryName: '전체', categoryId: '' }]); // 에러 시 '전체'만 포함
+          setCategories([{ categoryName: '전체', categoryId: '' }]);
         }
       } catch (error) {
         console.error('카테고리 목록을 불러오는데 실패했습니다.', error);
-        setCategories([{ categoryName: '전체', categoryId: '' }]); // 에러 시 '전체'만 포함
+        setCategories([{ categoryName: '전체', categoryId: '' }]);
       }
     };
     fetchCategories();
@@ -61,9 +69,17 @@ const ProductSearch = () => {
     if (category) params.set('category', category);
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
-    if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
-      alert('최소 가격은 최대 가격보다 작거나 같아야 합니다.');
-      return;
+    if (
+      minPrice &&
+      maxPrice &&
+      Number(minPrice.replace(/,/g, "")) > Number(maxPrice.replace(/,/g, ""))
+    ) {
+      setSnackbar({
+        open: true,
+        message: '최소 가격은 최대 가격보다 작거나 같아야 합니다.',
+        severity: 'error',
+      });
+      return; // 페이지 이동 막음
     }
     navigate(`/products?${params.toString()}`);
   };
@@ -87,10 +103,11 @@ const ProductSearch = () => {
         options={categories.map((cat) => ({ value: cat.categoryName, label: cat.categoryName }))}
       />
       {/* 지역 선택 버튼 */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 0.25 }}>
         <Button
           onClick={() => setModalOpen(true)}
           variant="outlined"
+          color="primary"
           sx={{
             borderRadius: 25,
             background: '#fff',
@@ -101,10 +118,13 @@ const ProductSearch = () => {
             fontSize: 16,
             display: 'flex',
             alignItems: 'center',
-            '&:hover': { borderColor: '#EA002C', background: '#fafafa' },
+            '&:hover': {
+              borderColor: theme.palette.error.main,
+              background: theme.palette.background.default,
+            },
           }}
         >
-          <LocationOnIcon sx={{ color: '#EA002C', fontSize: 26, ml: -1 }} />
+          <LocationOnIcon sx={{ color: theme.palette.error.main, fontSize: 26, ml: -1 }} />
           {selected && selected.areaName ? selected.areaName : '지역 선택'}
         </Button>
       </Box>
@@ -154,11 +174,12 @@ const ProductSearch = () => {
           sx={{
             height: 40,
             width: 40,
-            bgcolor: '#EA002C',
+            mt: 0.05,
+            bgcolor: theme.palette.error.main,
             color: '#fff',
             border: 'none',
             borderRadius: 25,
-            '&:hover': { bgcolor: '#c40024' },
+            '&:hover': { bgcolor: theme.palette.error.dark },
           }}
           aria-label="검색"
         >
@@ -179,6 +200,12 @@ const ProductSearch = () => {
           }}
         />
       )}
+      <FormSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Box>
   );
 };

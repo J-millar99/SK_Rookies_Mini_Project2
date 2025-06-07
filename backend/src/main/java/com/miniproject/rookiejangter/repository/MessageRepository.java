@@ -20,5 +20,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Transactional
     @Modifying
     @Query("UPDATE Message m SET m.isRead = :isRead WHERE m.messageId = :messageId")
-    void updateIsReadByMessageId(boolean isRead, Long messageId);
+    void updateIsReadByMessageId(Boolean isRead, Long messageId);
 }

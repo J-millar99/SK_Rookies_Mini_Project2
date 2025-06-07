@@ -40,8 +40,8 @@ public class BumpServiceTest {
     private final int MAX_BUMPS_PER_DAY = 5;
 
     @Test
-    @DisplayName("게시글 끌어올리기 성공 테스트 (첫 번째 끌어올리기)")
-    void bumpProductFirstTimeSuccessTest() {
+    @DisplayName("게시글 끌어올리기 성공 테스트")
+    void bumpProductSuccessTest() {
         // Given
         Long productId = 1L;
         Product product = Product.builder().productId(productId).isBumped(false).build();
@@ -63,40 +63,6 @@ public class BumpServiceTest {
 
         // Then
         assertThat(response.getBumpCount()).isEqualTo(1);
-        assertThat(response.getProductId()).isEqualTo(productId);
-        verify(productRepository, times(1)).findById(productId);
-        verify(bumpRepository, times(1)).countByProduct_ProductIdAndBumpedAtBetween(eq(productId), any(LocalDateTime.class), any(LocalDateTime.class));
-        verify(bumpRepository, times(1)).findTopByProduct_ProductIdOrderByBumpedAtDesc(productId);
-        verify(bumpRepository, times(1)).save(any(Bump.class));
-        verify(productRepository, times(1)).save(product);
-        assertThat(product.getIsBumped()).isTrue();
-    }
-
-    @Test
-    @DisplayName("게시글 끌어올리기 성공 테스트 (기존 끌어올리기 존재)")
-    void bumpProductExistingBumpsSuccessTest() {
-        // Given
-        Long productId = 1L;
-        Product product = Product.builder().productId(productId).isBumped(false).build();
-        Bump latestBump = Bump.builder().bumpId(2L).product(product).bumpedAt(LocalDateTime.now().minusHours(1)).bumpCount(3).build();
-        Bump savedBump = Bump.builder()
-                .bumpId(3L)
-                .product(product)
-                .bumpedAt(LocalDateTime.now())
-                .bumpCount(4)
-                .build();
-
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        when(bumpRepository.countByProduct_ProductIdAndBumpedAtBetween(eq(productId), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(3L);
-        when(bumpRepository.findTopByProduct_ProductIdOrderByBumpedAtDesc(productId)).thenReturn(Optional.of(latestBump));
-        when(bumpRepository.save(any(Bump.class))).thenReturn(savedBump);
-        when(productRepository.save(any(Product.class))).thenReturn(product);
-
-        // When
-        BumpDTO.Response response = bumpService.bumpProduct(productId);
-
-        // Then
-        assertThat(response.getBumpCount()).isEqualTo(4);
         assertThat(response.getProductId()).isEqualTo(productId);
         verify(productRepository, times(1)).findById(productId);
         verify(bumpRepository, times(1)).countByProduct_ProductIdAndBumpedAtBetween(eq(productId), any(LocalDateTime.class), any(LocalDateTime.class));

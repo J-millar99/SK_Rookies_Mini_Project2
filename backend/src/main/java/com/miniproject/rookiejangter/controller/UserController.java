@@ -63,11 +63,4 @@ public class UserController {
         List<ReservationDTO.Response> allReservations = reservationService.getAllReservations(userId);
         return ResponseEntity.ok(allReservations);
     }
-
-//    @GetMapping("/notify")
-//    public ResponseEntity<List<NotificationDTO.Response>> getUserNotify(Authentication authentication) {
-//        Long userId = Long.parseLong(authentication.getName());
-//        List<NotificationDTO.Response> notifications = notificationService.getNotificationsByUserId(userId);
-//        return ResponseEntity.ok(notifications);
-//    }
 }

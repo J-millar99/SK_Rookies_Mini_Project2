@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import { Box, Button, Divider, InputAdornment, TextField, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProductImageUploader from '../components/ProductImageUploader';
-import FormErrorSnackbar from '../components/FormErrorSnackbar';
+import FormSnackbar from '../components/FormSnackbar';
 import useProductForm from '../hooks/useProductForm';
 
 const MAX_IMAGES = 3;
@@ -40,7 +40,7 @@ const ProductRegisterPage = ({ editMode }) => {
     try {
       const payload = jwtDecode(token);
       userId = payload.sub; // JWT의 sub가 userId
-    } catch (e) {
+    } catch {
       userId = '';
     }
   }
@@ -63,8 +63,8 @@ const ProductRegisterPage = ({ editMode }) => {
   // 상품 정보와 이미지 한 번에 불러오기
   useEffect(() => {
     if (isEdit && !id) {
-      // NotFound 함수가 정의되어 있다고 가정
-      NotFound();
+      setFormError("ID를 찾을 수 없습니다!");
+      setOpenError(true);
       return;
     }
     if (isEdit && id) {
@@ -95,7 +95,7 @@ const ProductRegisterPage = ({ editMode }) => {
                   imageId: img.imageId,
                 }))
               : [];
-          } catch (e) {
+          } catch {
             imgArr = [];
           }
           setForm({
@@ -107,12 +107,13 @@ const ProductRegisterPage = ({ editMode }) => {
           });
         })
         .catch(() => {
-          alert('상품 정보를 불러올 수 없습니다.');
+          setFormError('상품 정보를 불러올 수 없습니다.');
+          setOpenError(true);
           navigate('/my-products');
         })
         .finally(() => setLoading(false));
     }
-  }, [isEdit, id, token, navigate, categoryOptions, setForm, setLoading]);
+  }, [isEdit, id, token, navigate, categoryOptions, setForm, setLoading, setFormError, setOpenError]);
 
   // 사용자 상태 정보 불러오기
   useEffect(() => {
@@ -184,8 +185,17 @@ const ProductRegisterPage = ({ editMode }) => {
             },
           });
         }
-        alert('상품이 수정되었습니다.');
-        navigate(`/my-products/${product_id}`);
+        setFormError('상품이 수정되었습니다.');
+        setOpenError(true);
+        navigate(`/my-products`, {
+          state: {
+            snackbar: {
+              open: true,
+              message: '상품이 수정되었습니다.',
+              severity: 'success',
+            },
+          },
+        });
       } else {
         const formData = new FormData();
         formData.append('title', form.title);
@@ -216,8 +226,16 @@ const ProductRegisterPage = ({ editMode }) => {
               },
             });
           }
-          alert('성공적으로 등록되었습니다.');
-          navigate('/my-products');
+          // snackbar 메시지와 함께 바로 이동
+          navigate('/my-products', {
+            state: {
+              snackbar: {
+                open: true,
+                message: '성공적으로 등록되었습니다.',
+                severity: 'success',
+              },
+            },
+          });
         }
       }
     } catch (e) {
@@ -352,7 +370,7 @@ const ProductRegisterPage = ({ editMode }) => {
           {loading ? (isEdit ? '수정 중...' : '등록 중...') : isEdit ? '상품 수정' : '상품 등록'}
         </Button>
       </Box>
-      <FormErrorSnackbar open={openError} message={formError} onClose={() => setOpenError(false)} />
+      <FormSnackbar open={openError} message={formError} onClose={() => setOpenError(false)} />
     </Box>
   );
 };

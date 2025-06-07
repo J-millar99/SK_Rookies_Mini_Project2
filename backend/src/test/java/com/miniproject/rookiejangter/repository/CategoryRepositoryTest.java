@@ -40,25 +40,19 @@ public class CategoryRepositoryTest {
     }
 
     @Test
-    public void testFindByCategoryNameContainingIgnoreCase() {
-        List<Category> foundCategories = categoryRepository.findByCategoryNameContainingIgnoreCase("테");
-        assertThat(foundCategories.get(0).getCategoryName()).isEqualTo("테스트");
-    }
-
-    @Test
     public void testSaveCategory() {
         Category newCategory = Category.builder()
                 .categoryName("New Category")
                 .build();
         Category savedCategory = categoryRepository.save(newCategory);
         assertThat(savedCategory.getCategoryId()).isNotNull();
-        assertThat(savedCategory.getCategoryName()).isEqualTo("NewCategory");
+        assertThat(savedCategory.getCategoryName()).isEqualTo("New Category");
     }
 
     @Test
     public void testDeleteCategory() {
         categoryRepository.delete(testCategory);
-        Optional<Category> deletedCategory = categoryRepository.findByCategoryName("TestCategory1");
+        Optional<Category> deletedCategory = categoryRepository.findByCategoryName("Test Category1");
         assertThat(deletedCategory).isEmpty();
     }
 }

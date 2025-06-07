@@ -22,10 +22,6 @@ public class ReportController {
     private final ReportService reportService;
     private final BanService banService;
 
-    /**
-     * 사용자 신고 접수
-     * POST /api/reports
-     */
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<ReportDTO.Response> createReport(
@@ -37,10 +33,6 @@ public class ReportController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 처리되지 않은 신고 목록 조회 (관리자)
-     * GET /api/reports/admin/unprocessed
-     */
     @GetMapping("/admin/unprocessed")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ReportDTO.Response>> getUnprocessedReports() {
@@ -48,10 +40,6 @@ public class ReportController {
         return ResponseEntity.ok(reports);
     }
 
-    /**
-     * 신고 처리 완료로 상태 변경 (관리자)
-     * PATCH /api/reports/admin/{reportId}/process
-     */
     @PatchMapping("/admin/{reportId}/process")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> markReportAsProcessed(@PathVariable Long reportId) {
@@ -59,10 +47,6 @@ public class ReportController {
         return ResponseEntity.ok("신고(ID: " + reportId + ")가 처리되었습니다.");
     }
 
-    /**
-     * 신고 기반 사용자 제재 (관리자)
-     * POST /api/reports/admin/bans
-     */
     @PostMapping("/admin/bans")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BanDTO.Response> banUserBasedOnReport(@Valid @RequestBody BanDTO.Request banRequest) {

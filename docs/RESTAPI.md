@@ -989,7 +989,7 @@ Response (200 OK):
 #### 4.3.1 찜하기 추가/제거
 
 ```yaml
-PUT /api/wishlist/{product_id}
+PUT /api/dibs/{product_id}
 Authorization: Bearer {JWT_TOKEN}
 Required Role: USER
 
@@ -1040,7 +1040,7 @@ Responses:
 #### 4.3.2 찜한 상품 목록
 
 ```yaml
-GET /api/wishlist
+GET /api/dibs
 Authorization: Bearer {JWT_TOKEN}
 Required Role: USER
 
@@ -1082,14 +1082,13 @@ Responses:
 #### 4.3.3 거래 신청
 
 ```yaml
-POST /api/trades
+POST /api/reservations
 Authorization: Bearer {JWT_TOKEN}
 Required Role: USER
 
 Request Body:
   {
     "productId": 123,       # 거래 신청할 상품 ID
-    "offerMessage": "가격 조정 가능할까요?"
   }
 
 Responses:
@@ -1099,7 +1098,7 @@ Responses:
      {
        "success": true,
        "data": {
-         "tradeId": 456,
+         "reservationId": 456,
          "productId": 123,
          "buyerId": 10,
          "status": "REQUESTED",
@@ -1131,12 +1130,12 @@ Responses:
 #### 4.3.4 거래 상태 변경
 
 ```yaml
-PATCH /api/trades/{trade_id}/status
+PATCH /api/reservations/{reservation_id}/status
 Authorization: Bearer {JWT_TOKEN}
 Required Role: USER (판매자), ADMIN
 
 Path Parameters:
-  - trade_id: integer (required)
+  - reservation_id: integer (required)
 
 Request Body:
   {
@@ -1150,7 +1149,7 @@ Responses:
      {
        "success": true,
        "data": {
-         "tradeId": 456,
+         "reservationId": 456,
          "status": "ACCEPTED",
          "updatedAt": "2025-05-29T15:00:00Z"
        },
@@ -1180,12 +1179,12 @@ Responses:
 #### 4.3.5 거래 후기 작성
 
 ```yaml
-POST /api/trades/{trade_id}/review
+POST /api/reviews/{complete_id}
 Authorization: Bearer {JWT_TOKEN}
 Required Role: USER (거래 참여자)
 
 Path Parameters:
-  - trade_id: integer (required)
+  - complete_id: integer (required)
 
 Request Body:
   {
@@ -1201,7 +1200,7 @@ Responses:
        "success": true,
        "data": {
          "reviewId": 789,
-         "tradeId": 456,
+         "completeId": 456,
          "rating": 5,
          "comment": "친절한 거래 감사합니다!",
          "createdAt": "2025-05-29T16:00:00Z"

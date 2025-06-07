@@ -86,7 +86,6 @@ public class ProductDTO {
         private OffsetDateTime createdAt;
         private OffsetDateTime updatedAt;
         private Integer viewCount;
-        private Boolean isLiked;
         private Boolean isBumped;
         private Boolean isReserved;
         private Boolean isCompleted;
@@ -103,10 +102,9 @@ public class ProductDTO {
                     .createdAt(product.getCreatedAt().atOffset(ZoneOffset.UTC))
                     .updatedAt(product.getUpdatedAt() != null ? product.getUpdatedAt().atOffset(ZoneOffset.UTC) : null)
                     .viewCount(product.getViewCount())
-                    .isLiked(false)
-                    .isBumped(false)
-                    .isReserved(false)
-                    .isCompleted(false)
+                    .isBumped(product.getIsBumped() != null ? product.getIsBumped() : false)
+                    .isReserved(product.getIsReserved() != null ? product.getIsReserved() : false)
+                    .isCompleted(product.getIsCompleted() != null ? product.getIsCompleted() : false)
                     .build();
         }
     }
@@ -149,9 +147,9 @@ public class ProductDTO {
     }
 
     @Data
-    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class StatusUpdateRequest {
         private Boolean isReserved;  // 예약중 상태
         private Boolean isCompleted; // 판매완료 상태

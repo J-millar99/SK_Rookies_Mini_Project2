@@ -5,15 +5,7 @@ logging:
   level:
     com:
       miniproject:
-        joongo: INFO
-#    org:
-#      springframework:
-#        data:
-#          redis: DEBUG # 스프링 데이터 Redis의 모든 로그를 DEBUG 레벨로 올립니다.
-#        # Lettuce 드라이버 자체의 상세 로그를 보려면 다음도 추가합니다.
-#        lettuce: DEBUG # Lettuce 로그도 DEBUG 레벨로 올립니다.
-#    io: # Lettuce 코어 라이브러리 (Redis 클라이언트)
-#      lettuce: DEBUG
+        joongo: DEBUG
 
 spring:
   datasource:

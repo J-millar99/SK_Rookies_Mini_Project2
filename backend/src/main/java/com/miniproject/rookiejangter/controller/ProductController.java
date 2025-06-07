@@ -5,6 +5,8 @@ import com.miniproject.rookiejangter.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +34,7 @@ public class ProductController {
     // 현재 유저가 등록한 모든 상품 조회
     @GetMapping("/products")
     public ResponseEntity<ProductDTO.ProductListData> getUserProducts(
-            Pageable pageable,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Authentication authentication) {
         Long userId = Long.parseLong(authentication.getName());
         ProductDTO.ProductListData response = productService.getProductsByUser(userId, pageable, userId);

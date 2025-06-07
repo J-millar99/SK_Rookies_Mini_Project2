@@ -43,7 +43,6 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(uploadedImages);
     }
 
-    // 변경된 부분: /images/id/{imageId} 로 경로 변경
     @GetMapping("/id/{imageId}")
     public ResponseEntity<ImageDTO.Response> getImageByImageId(@PathVariable Long imageId) {
         return ResponseEntity.ok(imageService.getImageByImageId(imageId));
@@ -51,8 +50,6 @@ public class ImageController {
 
     @GetMapping("/product/{productId}")
     public ResponseEntity<List<ImageDTO.Response>> getImagesByProductId(@PathVariable Long productId) {
-        // productRepository가 ImageController에 직접 정의되지 않았습니다.
-        // ImageService.getImagesByProductId에서 product 존재 여부를 확인하므로 여기서는 제거합니다.
         return ResponseEntity.ok(imageService.getImagesByProductId(productId));
     }
 

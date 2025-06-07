@@ -15,6 +15,9 @@ import { setIdentityInfo, clearAuthState } from '../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { getAreas } from '../api/area';
+import FormSnackbar from '../components/FormSnackbar';
+import notificationService from '../api/notificationService';
+import { FormatTime } from '../utils/FormatTime';
 
 const MyPage = () => {
   const dispatch = useDispatch();
@@ -34,10 +37,19 @@ const MyPage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [trades, setTrades] = useState([]);
-  const [wishlist, setWishlist] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
+  // Snackbar 상태
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
+  const handleSnackbarClose = () => setSnackbar({ ...snackbar, open: false });
+
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('accessToken');
@@ -73,10 +85,6 @@ const MyPage = () => {
     setTrades([
       { id: 1, title: '맥북 중고 거래', status: '진행중' },
       { id: 2, title: '의자 판매 거래', status: '배송중' },
-    ]);
-    setWishlist([
-      { id: 1, title: '에어팟 프로 2세대' },
-      { id: 2, title: '갤럭시 워치 6' },
     ]);
     setNotifications([
       { id: 1, message: '새로운 댓글이 달렸습니다.', date: '2025-06-05' },
@@ -155,10 +163,18 @@ const MyPage = () => {
       );
       dispatch(setIdentityInfo(response.data));
       setEditing(false);
-      alert('프로필이 성공적으로 업데이트되었습니다.');
+      setSnackbar({
+        open: true,
+        message: '프로필이 성공적으로 업데이트되었습니다.',
+        severity: 'success',
+      });
     } catch (error) {
       console.error('프로필 업데이트 실패:', error);
-      alert('프로필 업데이트에 실패했습니다.');
+      setSnackbar({
+        open: true,
+        message: '프로필 업데이트에 실패했습니다.',
+        severity: 'error',
+      });
     }
   };
 
@@ -173,21 +189,69 @@ const MyPage = () => {
         data: { password },
       });
 
-      alert('계정이 삭제되었습니다.');
+      setSnackbar({
+        open: true,
+        message: '계정이 삭제되었습니다.',
+        severity: 'success',
+      });
       dispatch(clearAuthState());
       useAuthStore.getState().logout();
       navigate('/login');
     } catch (error) {
       console.error('계정 삭제 실패:', error);
-      alert('비밀번호가 일치하지 않아서 삭제에 실패했습니다.');
+      setSnackbar({
+        open: true,
+        message: '비밀번호가 일치하지 않아서 삭제에 실패했습니다.',
+        severity: 'error',
+      });
     }
   };
+
+  // 알림 리스트 불러오기
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      const res = await notificationService.getNotifications(0, 10, 'sentAt,desc');
+      console.log("알림 리스트 응답:", res);
+      if (res.success && res.data?.content) {
+        setNotifications(res.data.content);
+      } else {
+        setNotifications([]);
+      }
+    };
+    fetchNotifications();
+  }, []);
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
         마이페이지
       </Typography>
+      <Box my={4}>
+        <Button variant="contained"
+        color="success"
+        sx={{ ml: 2 }} 
+        onClick={() => navigate('/products/register')}>
+          상품 등록
+        </Button>
+        <Button
+          variant="contained"
+          color="info"
+          sx={{ ml: 2 }}
+          onClick={() => navigate('/my-products')}
+        >
+          My 상품
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ ml: 2 }}
+          onClick={() => navigate('/my-products', { state: { dibs: true } })}
+        >
+          찜한 상품
+        </Button>
+      </Box>
 
       {editing ? (
         <>
@@ -294,38 +358,30 @@ const MyPage = () => {
 
       <hr style={{ margin: '30px 0' }} />
 
-      {/* 찜 목록 */}
-      <Typography variant="h5" gutterBottom>
-        찜 목록
-      </Typography>
-      {wishlist.length > 0 ? (
-        wishlist.map((item) => (
-          <Box key={item.id} sx={{ mb: 1, p: 1, border: '1px solid #ccc', borderRadius: 2 }}>
-            <Typography>{item.title}</Typography>
-          </Box>
-        ))
-      ) : (
-        <Typography color="text.secondary">찜한 항목이 없습니다.</Typography>
-      )}
-
-      <hr style={{ margin: '30px 0' }} />
-
       {/* 알림 리스트 */}
       <Typography variant="h5" gutterBottom>
         알림 리스트
       </Typography>
       {notifications.length > 0 ? (
         notifications.map((noti) => (
-          <Box key={noti.id} sx={{ mb: 1, p: 1, border: '1px solid #ccc', borderRadius: 2 }}>
+          <Box key={noti.notificationId || noti.id} sx={{ mb: 1, p: 1, border: '1px solid #ccc', borderRadius: 2 }}>
             <Typography>{noti.message}</Typography>
             <Typography variant="caption" color="text.secondary">
-              {noti.date}
+              {noti.sentAt ? FormatTime(noti.sentAt) : (noti.date || noti.sentAt)}
             </Typography>
           </Box>
         ))
       ) : (
         <Typography color="text.secondary">알림이 없습니다.</Typography>
       )}
+
+      {/* Snackbar 팝업 */}
+      <FormSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={handleSnackbarClose}
+      />
     </Box>
   );
 };

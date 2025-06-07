@@ -14,8 +14,8 @@ public class ChatDTO {
     @AllArgsConstructor
     @Builder
     public static class Request {
+        private Long sellerId;
         private Long productId;
-        private Long participantId; // 상대방 사용자 ID
     }
 
     @Data
@@ -25,14 +25,16 @@ public class ChatDTO {
     public static class Response {
         private Long chatRoomId;
         private Long productId;
-        private List<Long> participants; // buyerId, sellerId
+        private Long buyerId;
+        private Long sellerId;
         private OffsetDateTime createdAt;
 
         public static Response fromEntity(Chat chat) {
             return Response.builder()
                     .chatRoomId(chat.getChatId())
                     .productId(chat.getProduct().getProductId())
-                    .participants(List.of(chat.getBuyer().getUserId(), chat.getSeller().getUserId()))
+                    .buyerId(chat.getBuyer().getUserId())
+                    .sellerId(chat.getSeller().getUserId())
                     .createdAt(chat.getCreatedAt().atOffset(ZoneOffset.UTC))
                     .build();
         }

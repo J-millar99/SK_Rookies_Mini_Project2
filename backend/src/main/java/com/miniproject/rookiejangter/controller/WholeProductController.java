@@ -32,10 +32,10 @@ public class WholeProductController {
     public ResponseEntity<ProductDTO.ApiResponseWrapper<ProductDTO.Response>> getProductById(
             @PathVariable("product_id") Long productId,
             @RequestHeader(value = "X-USER-ID", required = false) Long currentUserId) {
-        ProductDTO.Response productResponse = productService.getProductById(productId, currentUserId);
+        ProductDTO.Response response = productService.getProductById(productId, currentUserId);
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<ProductDTO.Response>builder()
                 .success(true)
-                .data(productResponse)
+                .data(response)
                 .message("상품 상세 정보가 성공적으로 조회되었습니다.")
                 .build());
     }

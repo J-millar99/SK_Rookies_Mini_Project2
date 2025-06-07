@@ -30,8 +30,8 @@ public class ChatService {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, request.getProductId()));
 
-        User buyer = userRepository.findById(request.getParticipantId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, request.getParticipantId()));
+        User buyer = userRepository.findById(request.getSellerId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, request.getSellerId()));
 
         // TODO: 현재 로그인한 사용자를 seller로 설정 (임시)
         User seller = userRepository.findById(1L)

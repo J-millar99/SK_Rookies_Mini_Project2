@@ -14,8 +14,23 @@ const theme = createTheme({
     primary: {
       main: '#FF6F0F',
     },
+    secondary: {
+      main: '#FFA500',
+    },
     background: {
       default: '#f9f9f9',
+    },
+    info: {
+      main: '#0288d1',
+      light: '#03a9f4',
+      dark: '#01579b',
+      extraLight: '#b3e5fc',
+    },
+    error: {
+      main: '#d32f2f',
+      light: '#ef9a9a',
+      dark: '#b71c1c',
+      extraLight: '#ffebee',
     },
   },
   typography: {

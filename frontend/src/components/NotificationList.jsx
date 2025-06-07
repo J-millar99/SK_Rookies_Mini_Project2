@@ -1,3 +1,5 @@
+// components/NotificationList.jsx
+
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   Box,
@@ -10,256 +12,350 @@ import {
   Paper,
   Button,
   Divider,
+  Snackbar,
 } from '@mui/material';
 import {
   getNotifications,
   markNotificationAsRead,
   deleteNotification,
-} from '../api/notificationService';
-import { formatDistanceToNow, parseISO } from 'date-fns'; // date-fns에서 parseISO 임포트 추가
-import { ko } from 'date-fns/locale'; // 한국어 로케일 (npm install date-fns)
+  updateReservationStatus,
+} from '../api/notificationService'; // notificationService 임포트
+import { FormatTime } from '../utils/FormatTime';
 
 const NotificationList = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true); // 더 불러올 알림이 있는지 여부
-  const [page, setPage] = useState(0); // 현재 페이지 번호 (0부터 시작)
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Intersection Observer를 위한 ref
   const observer = useRef();
   const lastNotificationElementRef = useCallback(
     (node) => {
-      if (loading) return; // 로딩 중이면 추가 요청 방지
-      if (observer.current) observer.current.disconnect(); // 기존 옵저버 연결 해제
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
-        // 엔트리가 뷰포트에 진입했고, 더 불러올 데이터가 있다면
         if (entries[0].isIntersecting && hasMore) {
-          setPage((prevPage) => prevPage + 1); // 다음 페이지 로드 요청
+          setPage((prevPage) => prevPage + 1);
         }
       });
-      if (node) observer.current.observe(node); // 새로운 노드 관찰 시작
+      if (node) observer.current.observe(node);
     },
     [loading, hasMore]
-  ); // loading 또는 hasMore 상태가 변경될 때마다 콜백 함수 재생성
+  );
 
-  const fetchNotifications = useCallback(async (pageNum) => {
+  const fetchNotifications = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // getNotifications 함수 호출 시 page, size, sortBy 파라미터 전달
-      const response = await getNotifications(pageNum, 10); // 한 페이지당 10개씩 가져오도록 설정
-
-      if (response.success && response.data) {
-        const { content: newNotifications, totalPages } = response.data; // 백엔드의 Page 객체에서 content와 totalPages 추출
-
+      const result = await getNotifications(page);
+      if (result.success) {
         setNotifications((prevNotifications) => {
-          // 새로운 알림을 기존 알림과 병합하되, 중복을 제거
-          const uniqueNewNotifications = newNotifications.filter(
+          const newNotifications = result.data.content.filter(
             (newNotif) =>
               !prevNotifications.some(
-                (existingNotif) => existingNotif.notificationId === newNotif.notificationId
+                (prevNotif) => prevNotif.notificationId === newNotif.notificationId
               )
           );
-          return [...prevNotifications, ...uniqueNewNotifications];
+          return [...prevNotifications, ...newNotifications];
         });
-
-        // 현재 페이지가 전체 페이지 수보다 작으면 더 불러올 데이터가 있다고 판단
-        setHasMore(pageNum < totalPages - 1);
+        setHasMore(!result.data.last);
       } else {
-        setError(
-          typeof response.error === 'object'
-            ? response.error.message || JSON.stringify(response.error)
-            : response.error || '알림 데이터를 불러오는데 실패했습니다.'
-        );
-        setHasMore(false);
+        setError(result.error || '알림을 불러오는 데 실패했습니다.');
       }
     } catch (err) {
-      setError('알림 데이터를 불러오는 중 오류가 발생했습니다.');
-      console.error('Fetch notifications error:', err);
-      setHasMore(false); // 오류 발생 시 더 이상 불러올 데이터 없음
+      console.error('알림 페칭 중 오류 발생:', err);
+      setError('알림을 불러오는 중 문제가 발생했습니다.');
     } finally {
       setLoading(false);
     }
-  }, []); // useCallback의 의존성 배열은 비워두어 컴포넌트 마운트 시 한 번만 생성되도록 합니다. (page 상태는 내부에서 관리)
+  }, [page]);
 
   useEffect(() => {
-    // page 상태가 변경될 때마다 알림을 새로 불러옴
-    fetchNotifications(page);
-  }, [page, fetchNotifications]); // page가 변경될 때마다 fetchNotifications 실행
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const handleNotificationClick = async (notificationId, isRead) => {
-    if (isRead) {
-      // 이미 읽은 알림이면 추가적인 읽음 처리 로직 불필요
-      console.log(`Notification ${notificationId} is already read.`);
-      return;
-    }
-
-    try {
-      const response = await markNotificationAsRead(notificationId);
-      if (response.success) {
-        // UI에서 해당 알림의 isRead 상태를 true로 업데이트
+    if (!isRead) {
+      const result = await markNotificationAsRead(notificationId);
+      if (result.success) {
         setNotifications((prevNotifications) =>
           prevNotifications.map((notif) =>
             notif.notificationId === notificationId ? { ...notif, isRead: true } : notif
           )
         );
-        console.log(`Notification ${notificationId} marked as read.`);
-        // 헤더의 읽지 않은 알림 개수 갱신을 위해 별도의 로직 필요 (예: Redux 상태 업데이트 또는 Header 컴포넌트 강제 재호출)
-        // 여기서는 간단히 새로고침을 유도하거나, Header에서 주기적으로 개수를 가져오도록 할 수 있습니다.
-        // 현재는 Header에서 주기적으로 가져오도록 가정하거나, 사용자가 페이지 이동 후 다시 들어올 때 갱신됩니다.
       } else {
-        alert('알림을 읽음 처리하는 데 실패했습니다: ' + response.error);
+        setSnackbarMessage('읽음 처리 실패: ' + (result.error?.message || '알 수 없는 오류'));
+        setSnackbarOpen(true);
       }
-    } catch (error) {
-      console.error('알림 읽음 처리 실패:', error);
-      alert('알림을 읽음 처리하는 중 오류가 발생했습니다.');
     }
   };
 
   const handleDeleteNotification = async (notificationId) => {
-    if (!window.confirm('정말로 이 알림을 삭제하시겠습니까?')) {
-      return;
-    }
-    try {
-      const response = await deleteNotification(notificationId);
-      if (response.success) {
-        setNotifications((prevNotifications) =>
-          prevNotifications.filter((notif) => notif.notificationId !== notificationId)
-        );
-        console.log(`Notification ${notificationId} deleted.`);
-        // 삭제 후에도 Header의 읽지 않은 알림 개수 갱신 필요
-      } else {
-        alert('알림 삭제에 실패했습니다: ' + response.error);
-      }
-    } catch (error) {
-      console.error('알림 삭제 실패:', error);
-      alert('알림을 삭제하는 중 오류가 발생했습니다.');
+    const confirmDelete = window.confirm('정말로 알림을 삭제하시겠습니까?');
+    if (!confirmDelete) return;
+
+    const result = await deleteNotification(notificationId);
+    if (result.success) {
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notif) => notif.notificationId !== notificationId)
+      );
+      setSnackbarMessage('알림이 삭제되었습니다.');
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage('알림 삭제 실패: ' + (result.error?.message || '알 수 없는 오류'));
+      setSnackbarOpen(true);
     }
   };
 
-  if (loading && notifications.length === 0) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // 예약 수락 핸들러
+  const handleAcceptReservation = async (notificationId, reservationId) => {
+    // buyerName 파라미터 제거
+    const confirmAccept = window.confirm('거래 요청을 수락하시겠습니까?'); // 메시지 수정
+    if (!confirmAccept) return;
+
+    const result = await updateReservationStatus(reservationId, 'ACCEPTED');
+    if (result.success) {
+      const readResult = await markNotificationAsRead(notificationId);
+      if (readResult.success) {
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notif) =>
+            notif.notificationId === notificationId
+              ? { ...notif, isRead: true, reservationStatus: 'ACCEPTED' }
+              : notif
+          )
+        );
+        setSnackbarMessage('예약 요청이 수락되었습니다.');
+      } else {
+        setSnackbarMessage(
+          '예약 수락은 완료되었으나 알림 읽음 처리 실패: ' +
+            (readResult.error?.message || '알 수 없는 오류')
+        );
+      }
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage('예약 수락 실패: ' + (result.error?.message || '알 수 없는 오류'));
+      setSnackbarOpen(true);
+    }
+  };
+
+  // 예약 거절 핸들러
+  const handleDeclineReservation = async (notificationId, reservationId) => {
+    // buyerName 파라미터 제거
+    const confirmDecline = window.confirm('거래 요청을 거절하시겠습니까?'); // 메시지 수정
+    if (!confirmDecline) return;
+
+    const result = await updateReservationStatus(reservationId, 'DECLINED');
+    if (result.success) {
+      const readResult = await markNotificationAsRead(notificationId);
+      if (readResult.success) {
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notif) =>
+            notif.notificationId === notificationId
+              ? { ...notif, isRead: true, reservationStatus: 'DECLINED' }
+              : notif
+          )
+        );
+        setSnackbarMessage('예약 요청이 거절되었습니다.');
+      } else {
+        setSnackbarMessage(
+          '예약 거절은 완료되었으나 알림 읽음 처리 실패: ' +
+            (readResult.error?.message || '알 수 없는 오류')
+        );
+      }
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage('예약 거절 실패: ' + (result.error?.message || '알 수 없는 오류'));
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ p: 2 }}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 800, mx: 'auto', mt: 4, p: 2 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        알림
+    <Box sx={{ maxWidth: 1000, mx: 'auto', mt: 4, p: 2 }}>
+      <Typography variant="h4" component="h1" gutterBottom align="center">
+        알림 목록
       </Typography>
-      {notifications.length === 0 && !loading ? (
-        <Alert severity="info">새로운 알림이 없습니다.</Alert>
+      {notifications.length === 0 && !loading && !hasMore ? (
+        <Paper elevation={1} sx={{ p: 3, textAlign: 'center', mt: 3 }}>
+          <Typography variant="h6" color="text.secondary">
+            받은 알림이 없습니다.
+          </Typography>
+        </Paper>
       ) : (
-        <List component={Paper} elevation={1}>
+        <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
           {notifications.map((notification, index) => {
-            const isLastElement = notifications.length === index + 1; // 마지막 요소인지 확인
+            const isLastElement = index === notifications.length - 1;
+            const isReservationNotification = notification.entityType === 'Reservation';
+            const isReservationHandled = notification.isRead && isReservationNotification;
+
             return (
               <React.Fragment key={notification.notificationId}>
                 <ListItem
-                  ref={isLastElement ? lastNotificationElementRef : null} // 마지막 요소에만 ref 연결
+                  alignItems="flex-start"
                   sx={{
-                    backgroundColor: notification.isRead ? '#f5f5f5' : '#ffffff', // 읽음 여부에 따른 배경색
+                    opacity: notification.isRead ? 0.7 : 1,
+                    backgroundColor: notification.isRead ? '#f5f5f5' : 'white',
                     cursor: 'pointer',
                     '&:hover': {
                       backgroundColor: notification.isRead ? '#eeeeee' : '#f0f0f0',
                     },
-                    display: 'flex',
-                    alignItems: 'center',
-                    py: 1.5,
-                    px: 2,
                   }}
+                  onClick={
+                    isReservationNotification
+                      ? undefined
+                      : () =>
+                          handleNotificationClick(notification.notificationId, notification.isRead)
+                  }
+                  ref={isLastElement && hasMore ? lastNotificationElementRef : null}
                 >
                   <ListItemText
-                    onClick={() =>
-                      handleNotificationClick(notification.notificationId, notification.isRead)
-                    }
                     primary={
                       <Typography
+                        component="span"
                         variant="body1"
-                        sx={{
-                          fontWeight: notification.isRead ? 'normal' : 'bold', // 읽음 여부에 따른 폰트 굵기
-                          color: notification.isRead ? 'text.secondary' : 'text.primary', // 읽음 여부에 따른 텍스트 색상
-                        }}
+                        color="text.primary"
+                        sx={{ fontWeight: notification.isRead ? 'normal' : 'bold' }}
                       >
                         {notification.message}
                       </Typography>
                     }
                     secondary={
                       <Typography
-                        variant="caption"
+                        sx={{ display: 'inline', ml: 2}}
+                        component="span"
+                        variant="body2"
                         color="text.secondary"
-                        sx={{
-                          color: notification.isRead ? 'text.disabled' : 'text.secondary',
-                        }}
                       >
-                        {/* sentAt이 ISO 8601 문자열이라고 가정 (예: "2023-10-26T10:00:00Z") */}
-                        {notification.sentAt
-                          ? formatDistanceToNow(parseISO(notification.sentAt), {
-                              addSuffix: true,
-                              locale: ko,
-                            })
-                          : '날짜 없음'}
+                        {notification.sentAt ? FormatTime(notification.sentAt) : ''}
                       </Typography>
                     }
                   />
-                  <Box sx={{ ml: 2, display: 'flex', gap: 1 }}>
-                    {!notification.isRead && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={(e) => {
-                          // 이벤트 버블링 방지
-                          e.stopPropagation();
-                          handleNotificationClick(notification.notificationId, notification.isRead);
-                        }}
-                      >
-                        읽음 표시
-                      </Button>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    {isReservationNotification ? (
+                      // Reservation 타입 알림일 때
+                      <>
+                        <Button
+                          variant="contained"
+                          color={
+                            isReservationHandled && notification.reservationStatus !== 'ACCEPTED'
+                              ? 'inherit'
+                              : 'success'
+                          }
+                          sx={
+                            isReservationHandled && notification.reservationStatus !== 'ACCEPTED'
+                              ? { backgroundColor: '#bdbdbd' }
+                              : {}
+                          }
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAcceptReservation(
+                              notification.notificationId,
+                              notification.entityId
+                            ); // buyerName 파라미터 제거
+                          }}
+                          disabled={isReservationHandled}
+                        >
+                          수락
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color={
+                            isReservationHandled && notification.reservationStatus !== 'DECLINED'
+                              ? 'inherit'
+                              : 'error'
+                          }
+                          sx={
+                            isReservationHandled && notification.reservationStatus !== 'DECLINED'
+                              ? { backgroundColor: '#bdbdbd' }
+                              : {}
+                          }
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeclineReservation(
+                              notification.notificationId,
+                              notification.entityId
+                            ); // buyerName 파라미터 제거
+                          }}
+                          disabled={isReservationHandled}
+                        >
+                          거절
+                        </Button>
+                      </>
+                    ) : (
+                      // 그 외 알림 타입일 때
+                      <>
+                        {!notification.isRead && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleNotificationClick(
+                                notification.notificationId,
+                                notification.isRead
+                              );
+                            }}
+                          >
+                            읽음처리
+                          </Button>
+                        )}
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteNotification(notification.notificationId);
+                          }}
+                        >
+                          삭제
+                        </Button>
+                      </>
                     )}
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      onClick={(e) => {
-                        // 이벤트 버블링 방지
-                        e.stopPropagation();
-                        handleDeleteNotification(notification.notificationId);
-                      }}
-                    >
-                      삭제
-                    </Button>
                   </Box>
                 </ListItem>
-                {/* 마지막 알림이 아니면 구분선 추가 */}
                 {!isLastElement && <Divider component="li" />}
               </React.Fragment>
             );
           })}
-          {loading && ( // 로딩 중일 때 로딩 스피너 표시
+          {loading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
               <CircularProgress size={24} />
             </Box>
           )}
-          {!hasMore &&
-            notifications.length > 0 && ( // 더 이상 불러올 알림이 없을 때 메시지 표시
-              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', p: 2 }}>
-                더 이상 알림이 없습니다.
-              </Typography>
-            )}
+          {!hasMore && notifications.length > 0 && (
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', p: 2 }}>
+              더 이상 알림이 없습니다.
+            </Typography>
+          )}
         </List>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };

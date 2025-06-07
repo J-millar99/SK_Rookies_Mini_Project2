@@ -38,7 +38,7 @@ public class DibsService {
 
         Optional<Dibs> existingDibs = dibsRepository.findByUser_UserIdAndProduct_ProductId(userId, productId);
 
-        boolean isNowLiked;
+        Boolean isNowLiked;
         if (existingDibs.isPresent()) {
             dibsRepository.delete(existingDibs.get());
             isNowLiked = false;
@@ -96,7 +96,7 @@ public class DibsService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, productId));
 
         // Product가 존재할 경우에만 찜 상태를 확인합니다.
-        boolean isLiked = dibsRepository.existsByUser_UserIdAndProduct_ProductId(userId, productId);
+        Boolean isLiked = dibsRepository.existsByUser_UserIdAndProduct_ProductId(userId, productId);
 
         if (isLiked) {
             List<Dibs> dibsForProduct = dibsRepository.findByProduct_ProductId(productId);

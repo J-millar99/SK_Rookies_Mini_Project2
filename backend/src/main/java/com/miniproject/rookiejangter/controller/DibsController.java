@@ -2,13 +2,8 @@ package com.miniproject.rookiejangter.controller;
 
 import com.miniproject.rookiejangter.controller.dto.DibsDTO;
 import com.miniproject.rookiejangter.controller.dto.ProductDTO;
-import com.miniproject.rookiejangter.controller.dto.UserDTO;
-import com.miniproject.rookiejangter.exception.BusinessException;
-import com.miniproject.rookiejangter.exception.ErrorCode;
 import com.miniproject.rookiejangter.service.DibsService;
-import com.miniproject.rookiejangter.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j; // 로깅 추가
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -16,24 +11,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset; // UTC 명시를 위해 추가
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/wishlist")
+@RequestMapping("/api/dibs")
 @RequiredArgsConstructor
 public class DibsController {
 
     private final DibsService dibsService;
-    private final UserService userService;
 
-
-    /**
-     * 찜하기 추가/제거 (토글)
-     * PUT /api/wishlist/{product_id}
-     */
     @PutMapping("/{productId}")
-    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.Response>> toggleWishlist(
+    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.Response>> toggleDibs(
             @PathVariable Long productId,
             Authentication authentication
     ) {
@@ -53,12 +42,8 @@ public class DibsController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 찜한 상품 목록 조회
-     * GET /api/wishlist
-     */
     @GetMapping
-    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.DibsListResponse>> getWishlist(
+    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.DibsListResponse>> getDibs(
             @PageableDefault(size = 20, page = 0) Pageable pageable,
             Authentication authentication
     ){
@@ -71,7 +56,6 @@ public class DibsController {
         //     dibsListResponse.getPagination().setContent(null);
         // }
 
-
         ProductDTO.ApiResponseWrapper<DibsDTO.DibsListResponse> response = ProductDTO.ApiResponseWrapper.<DibsDTO.DibsListResponse>builder()
                 .success(true)
                 .data(dibsListResponse)
@@ -82,8 +66,8 @@ public class DibsController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{productId}/my-status")
-    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.Response>> getMyDibsStatusForProduct(
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductDTO.ApiResponseWrapper<DibsDTO.Response>> getDibsStatusForProduct(
             @PathVariable Long productId,
             Authentication authentication
     ) {

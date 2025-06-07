@@ -14,7 +14,6 @@ const Header = () => {
 
   // Redux에서 사용자 정보 및 로딩 상태 가져오기
   const identityInfo = useSelector((state) => state.auth.identityInfo);
-  const loading = useSelector((state) => state.auth.loading);
 
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -99,11 +98,11 @@ const Header = () => {
             variant="h5"
             component="div"
             onClick={() => navigate('/')}
+            color = 'secondary'
             sx={{
               cursor: 'pointer',
               display: 'flex',
               fontWeight: 700,
-              color: '#FA5',
               textShadow: '0 1px 4px rgba(0,0,0,0.25)',
             }}
           >

@@ -8,14 +8,6 @@ const CARD_HEIGHT = 284;
 const IMAGE_HEIGHT = 200;
 
 const ProductCard = ({ product, onClick, formatTime }) => {
-  // 상품이 예약/거래완료면 아무것도 렌더링하지 않음
-  // if (
-  //   product.isReserved === true || product.isReserved === 1 ||
-  //   product.isCompleted === true || product.isCompleted === 1
-  // ) {
-  //   return null;
-  // }
-
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState(null);
 
@@ -37,20 +29,24 @@ const ProductCard = ({ product, onClick, formatTime }) => {
       .catch(() => setImageUrl(null));
   }, [product.id]);
 
+  // 상품이 예약/거래완료면 흐려보이게
+  const isInactive = (product.isReserved === true || product.isCompleted === true);
 
   const handleClick = () => {
     navigate(`/products/${product.id}`);
   };
 
   return (
-    <Card
-      onClick={onClick || handleClick}
+     <Card
+      onClick={(onClick || handleClick)}
       sx={{
         cursor: 'pointer',
         height: CARD_HEIGHT,
         display: 'flex',
         flexDirection: 'column',
         width: CARD_WIDTH,
+        opacity: isInactive ? 0.5 : 1, // 흐리게
+        transition: 'opacity 0.2s',
       }}
     >
       {/* 이미지 영역 */}

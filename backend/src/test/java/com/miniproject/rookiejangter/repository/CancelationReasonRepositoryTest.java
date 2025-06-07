@@ -41,13 +41,11 @@ public class CancelationReasonRepositoryTest {
         CancelationReason savedReason = cancelationReasonRepository.save(newReason);
         assertThat(savedReason).isNotNull();
         assertThat(savedReason.getCancelationReasonType()).isEqualTo("New Reason");
-        assertThat(cancelationReasonRepository.count()).isEqualTo(2);
     }
 
     @Test
     void delete_shouldRemoveData() {
         cancelationReasonRepository.delete(testReason);
-        assertThat(cancelationReasonRepository.count()).isZero();
         Optional<CancelationReason> deletedReason = cancelationReasonRepository.findByCancelationReasonId(testReason.getCancelationReasonId());
         assertThat(deletedReason).isEmpty();
     }

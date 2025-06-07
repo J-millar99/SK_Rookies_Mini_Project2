@@ -6,6 +6,7 @@ import com.miniproject.rookiejangter.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByProduct_ProductId(Long productId);
     List<Reservation> findByBuyer_UserIdAndProduct_ProductId(Long buyerUserId, Long productProductId);
 
-    boolean existsByBuyer_UserIdAndProduct_ProductId(Long buyerId, Long productId);
+    boolean existsByBuyer_UserIdAndProduct_ProductIdAndStatusIn(Long buyerUserId, Long productProductId, List<Reservation.TradeStatus> statuses);
     void deleteByBuyer_UserIdAndProduct_ProductId(Long buyerId, Long productId);
 }

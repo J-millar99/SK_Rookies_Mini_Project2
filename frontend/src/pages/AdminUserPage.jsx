@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import FormSnackbar from '../components/FormSnackbar'; // 추가
 
 const AdminUserPage = () => {
   const [users, setUsers] = useState([]);
@@ -23,6 +24,13 @@ const AdminUserPage = () => {
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+
+  // snackbar 상태 추가
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -50,7 +58,11 @@ const AdminUserPage = () => {
       setSelectedUser(response.data);
     } catch (err) {
       console.error('유저 상세정보 불러오기 실패:', err);
-      alert('유저 상세정보를 불러오지 못했습니다.');
+      setSnackbar({
+        open: true,
+        message: '유저 상세정보를 불러오지 못했습니다.',
+        severity: 'error',
+      });
     } finally {
       setDetailLoading(false);
     }
@@ -66,11 +78,19 @@ const AdminUserPage = () => {
       await axios.put(`http://localhost:8080/api/admin/users/${userId}/status`, {
         status: 'BANNED',
       });
-      alert('유저가 Ban 처리되었습니다.');
+      setSnackbar({
+        open: true,
+        message: '유저가 Ban 처리되었습니다.',
+        severity: 'success',
+      });
       fetchUsers();
     } catch (err) {
       console.error('유저 Ban 처리 실패:', err);
-      alert('유저 Ban 처리에 실패했습니다.');
+      setSnackbar({
+        open: true,
+        message: '유저 Ban 처리에 실패했습니다.',
+        severity: 'error',
+      });
     }
   };
 
@@ -179,6 +199,14 @@ const AdminUserPage = () => {
           <Button onClick={() => setSelectedUser(null)}>닫기</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar 알림 */}
+      <FormSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Box>
   );
 };
