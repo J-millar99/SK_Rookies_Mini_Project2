@@ -74,6 +74,29 @@ const notificationService = {
       return { success: false, error: error.response?.data || error.message };
     }
   },
+
+  /**
+   * 예약 상태를 업데이트하는 함수.
+   * 백엔드 PATCH /api/reservation/{reservationId}/status
+   * @param {number} reservationId - 상태를 변경할 예약의 ID
+   * @param {string} status - 변경할 예약 상태 (예: 'ACCEPTED', 'DECLINED')
+   * @returns {Promise<object>} 성공 여부 및 업데이트된 예약 데이터
+   */
+  updateReservationStatus: async (reservationId, status) => {
+    try {
+      const response = await axios.patch(
+        `http://localhost:8080/api/reservations/${reservationId}/status`,
+        { status: status }
+      );
+      return { success: true, data: response.data.data };
+    } catch (error) {
+      console.error(
+        `예약 ID ${reservationId}의 상태를 ${status}로 업데이트하는 데 실패했습니다:`,
+        error
+      );
+      return { success: false, error: error.response?.data || error.message };
+    }
+  },
 };
 
 export default notificationService;
@@ -83,4 +106,5 @@ export const {
   getUnreadNotificationsCount,
   markNotificationAsRead,
   deleteNotification,
+  updateReservationStatus,
 } = notificationService;

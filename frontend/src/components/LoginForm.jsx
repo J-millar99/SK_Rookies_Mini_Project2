@@ -4,10 +4,9 @@ import { loginUser } from '../api/auth';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore'; // Zustand
 import axios from 'axios';
-import FormErrorSnackbar from "./FormErrorSnackbar";
+import FormSnackbar from "./FormSnackbar";
 import { useDispatch } from 'react-redux';
 import { fetchIdentityInfo } from '../features/auth/authThunks';
-
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +21,13 @@ const LoginForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+
+  // snackbar 상태 추가
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -100,8 +106,16 @@ const LoginForm = () => {
         // ✅ Redux로 사용자 정보 요청
         dispatch(fetchIdentityInfo());
 
-        alert('로그인 완료!');
-        navigate('/');
+        // ✅ Snackbar로 로그인 완료 메시지
+        navigate('/', {
+          state: {
+            snackbar: {
+              open: true,
+              message: '로그인 완료!',
+              severity: 'success',
+            },
+          },
+        });
       }
     } catch (err) {
       console.error(err);
@@ -109,6 +123,11 @@ const LoginForm = () => {
         ...prevErrors,
         submit: '아이디 또는 비밀번호가 일치하지 않습니다.',
       }));
+      setSnackbar({
+        open: true,
+        message: '아이디 또는 비밀번호가 일치하지 않습니다.',
+        severity: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -165,6 +184,12 @@ const LoginForm = () => {
           <Typography>{errors.submit}</Typography>
         </Box>
       )}
+      <FormSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Box>
   );
 };

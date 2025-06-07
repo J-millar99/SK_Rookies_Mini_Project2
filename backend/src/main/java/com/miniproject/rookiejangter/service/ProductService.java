@@ -160,12 +160,8 @@ public class ProductService {
         if (!product.getUser().getUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.PRODUCT_OPERATION_FORBIDDEN, "상태 변경");
         }
-        if (isReserved != null) {
             product.setIsReserved(isReserved);
-        }
-        if (isCompleted != null) {
             product.setIsCompleted(isCompleted);
-        }
         productRepository.save(product);
     }
 
@@ -220,7 +216,9 @@ public class ProductService {
                 .createdAt(product.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))
                 .updatedAt(product.getUpdatedAt() != null ? product.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC) : null)
                 .viewCount(product.getViewCount())
-                .isLiked(isLiked)
+                .isBumped(product.getIsBumped())
+                .isReserved(product.getIsReserved())
+                .isCompleted(product.getIsCompleted())
                 .build();
     }
 }

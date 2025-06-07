@@ -1,4 +1,4 @@
-import { Typography, Box, Button } from '@mui/material';
+import { Typography, Box, Divider } from '@mui/material';
 import { useEffect, useState } from 'react'; // 백엔드 연동 시 필요
 import axios from 'axios'; // 백엔드 연동 시 필요
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -71,6 +71,7 @@ const ProductsPage = () => {
       <Box
         sx={{
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'center',
           width: 1200,
           mx: 1,
@@ -78,6 +79,11 @@ const ProductsPage = () => {
           position: 'relative',
         }}
       >
+        {/* 제목과 구분선 추가 */}
+        <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+          검색 조건에 해당하는 제품
+        </Typography>
+          <Divider sx={{ mb: 4, borderColor: "#222", borderWidth: 2 }} />
         {pagedProducts.length === 0 ? (
           <Box
             sx={{
@@ -93,11 +99,11 @@ const ProductsPage = () => {
             </Typography>
           </Box>
         ) : (
-          <ProductsList
-            products={pagedProducts}
-            onProductClick={(id) => navigate(`/products/${id}`)}
-            formatTime={FormatTime}
-          />
+            <ProductsList
+              products={pagedProducts}
+              onProductClick={(id) => navigate(`/products/${id}`)}
+              formatTime={FormatTime}
+            />
         )}
       </Box>
       {/* 페이지네이션 버튼을 제품 박스 아래로 이동 */}

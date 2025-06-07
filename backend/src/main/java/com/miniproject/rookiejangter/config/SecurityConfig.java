@@ -4,6 +4,7 @@ import com.miniproject.rookiejangter.provider.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -43,8 +44,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         // 기본 페이지 및 정적 리소스 허용
                         .requestMatchers("/", "/index.html").permitAll()
-                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/areas/**", "/categories/**", "/api/products/**").permitAll()
-                        
+                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/areas/**", "/categories/**").permitAll()
+
+                        // 상품 조회 API만 허용 (POST, PUT, DELETE는 인증 필요)
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+
                         // 개발 환경 리소스 허용
                         .requestMatchers("/src/**", "/Users/**", "/@vite/**", "/node_modules/**").permitAll()
                         
@@ -53,7 +57,7 @@ public class SecurityConfig {
                         
                         // 인증 관련 API 허용
                         .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/refresh").permitAll()
-                        
+
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
@@ -79,7 +83,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 프론트엔드 주소
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

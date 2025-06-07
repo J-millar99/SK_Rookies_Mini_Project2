@@ -1,7 +1,8 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Box, Paper, Typography, IconButton } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import CloseIcon from "@mui/icons-material/Close";
+import FormSnackbar from "./FormSnackbar";
 
 const MAX_IMAGES = 3;
 
@@ -13,11 +14,20 @@ const MAX_IMAGES = 3;
  */
 const ProductImageUploader = ({ images, onChange }) => {
   const fileInputRef = useRef();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error",
+  });
 
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     if (images.length + files.length > MAX_IMAGES) {
-      alert(`이미지는 최대 ${MAX_IMAGES}장까지 등록할 수 있습니다.`);
+      setSnackbar({
+        open: true,
+        message: `이미지는 최대 ${MAX_IMAGES}장까지 등록할 수 있습니다.`,
+        severity: "error",
+      });
       return;
     }
     const newImages = files.map((file) => ({
@@ -46,7 +56,7 @@ const ProductImageUploader = ({ images, onChange }) => {
         }}
       >
         <Typography fontWeight={700} fontSize={18}>
-          상품이미지 {" "}
+          상품이미지{" "}
           <Typography component="span" color="#888" fontWeight={400} display="inline">
             ({images.length}/{MAX_IMAGES})
           </Typography>
@@ -149,6 +159,12 @@ const ProductImageUploader = ({ images, onChange }) => {
           </Paper>
         ))}
       </Box>
+      <FormSnackbar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      />
     </Box>
   );
 };

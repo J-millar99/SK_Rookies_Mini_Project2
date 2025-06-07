@@ -10,7 +10,6 @@ import com.miniproject.rookiejangter.repository.ProductRepository;
 import com.miniproject.rookiejangter.repository.ReservationRepository;
 import com.miniproject.rookiejangter.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import com.miniproject.rookiejangter.service.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +34,7 @@ public class ReservationService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND, productId));
 
         if (product.getIsCompleted() || (product.getIsReserved() && !product.getUser().getUserId().equals(buyerId))) {
-            throw new BusinessException(ErrorCode.PRODUCT_NOT_RESERVABLE, "이미 판매 완료된 상품입니다.");
+            throw new BusinessException(ErrorCode.PRODUCT_NOT_RESERVABLE, "이미 거래 예정이거나, 판매가 완료된 상품입니다.");
         }
 
         if (product.getUser().getUserId().equals(buyerId)) {
@@ -62,8 +61,8 @@ public class ReservationService {
         String notificationMessage = buyer.getUserName() + "님께서 '" + product.getTitle() + "' 상품에 거래 요청을 보냈습니다.";
         notificationService.createNotification(
                 seller.getUserId(),
-                product.getProductId(),
-                "Product",
+                savedReservation.getReservationId(),
+                "Reservation",
                 notificationMessage
         );
 
@@ -202,7 +201,7 @@ public class ReservationService {
                 notificationMessage = reservation.getBuyer().getUserName() + "님께서 '" + reservation.getProduct().getTitle() + "' 상품의 예약 요청을 취소했습니다.";
                 targetUserId = reservation.getSeller().getUserId();
             } else { // isSeller
-                notificationMessage = reservation.getSeller().getUserName() + "님께서 '" + reservation.getProduct().getTitle() + "' 상품의 예약을 취소했습니다.";
+                notificationMessage = reservation.getSeller().getUserName() + "님께서 '" + reservation.getProduct().getTitle() + "' 상품의 예약을 거절했습니다.";
                 targetUserId = reservation.getBuyer().getUserId();
             }
         } else if (newStatus == Reservation.TradeStatus.COMPLETED) {
@@ -215,8 +214,8 @@ public class ReservationService {
 
         notificationService.createNotification(
                 targetUserId,
-                reservation.getProduct().getProductId(),
-                "Product",
+                reservation.getReservationId(),
+                "Answer",
                 notificationMessage
         );
 

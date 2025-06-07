@@ -5,6 +5,7 @@ import com.miniproject.rookiejangter.controller.dto.ReservationDTO;
 import com.miniproject.rookiejangter.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.DELETE, RequestMethod.OPTIONS}) // <--- 이 라인 수정
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -20,7 +22,8 @@ public class ReservationController {
     // 현재 로그인 중인 사용자가 buyerId로 설정된 모든 reservations를 목록으로 보여줌
     @GetMapping("/buyer")
     public ResponseEntity<ProductDTO.ApiResponseWrapper<List<ReservationDTO.Response>>> getReservationsByBuyer(
-            @RequestHeader(value = "X-USER-ID") Long currentUserId) {
+            Authentication authentication) {
+        Long currentUserId = Long.parseLong(authentication.getName()); // JWT에서 userId 추출
         List<ReservationDTO.Response> reservations = reservationService.getReservationsByBuyer(currentUserId);
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<List<ReservationDTO.Response>>builder()
                 .success(true)
@@ -32,7 +35,8 @@ public class ReservationController {
     // 현재 로그인 중인 사용자가 sellerId로 설정된 모든 reservations를 목록으로 보여줌
     @GetMapping("/seller")
     public ResponseEntity<ProductDTO.ApiResponseWrapper<List<ReservationDTO.Response>>> getReservationsBySeller(
-            @RequestHeader(value = "X-USER-ID") Long currentUserId) {
+            Authentication authentication) { // @RequestHeader 대신 Authentication 사용
+        Long currentUserId = Long.parseLong(authentication.getName()); // JWT에서 userId 추출
         List<ReservationDTO.Response> reservations = reservationService.getReservationsBySeller(currentUserId);
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<List<ReservationDTO.Response>>builder()
                 .success(true)
@@ -45,10 +49,9 @@ public class ReservationController {
     @PostMapping
     public ResponseEntity<ProductDTO.ApiResponseWrapper<ReservationDTO.Response>> createReservation(
             @RequestBody ReservationDTO.TradeRequest request,
-            @RequestHeader(value = "X-USER-ID") Long currentUserId) {
+            Authentication authentication) { // @RequestHeader 대신 Authentication 사용
+        Long currentUserId = Long.parseLong(authentication.getName()); // JWT에서 userId 추출
         ReservationDTO.Response reservation = reservationService.createReservation(currentUserId, request.getProductId());
-
-
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<ReservationDTO.Response>builder()
                 .success(true)
                 .data(reservation)
@@ -61,7 +64,8 @@ public class ReservationController {
     public ResponseEntity<ProductDTO.ApiResponseWrapper<ReservationDTO.Response>> updateReservationStatus(
             @PathVariable("reservation_id") Long reservationId,
             @RequestBody ReservationDTO.StatusUpdateRequest request,
-            @RequestHeader(value = "X-USER-ID") Long currentUserId) {
+            Authentication authentication) { // @RequestHeader 대신 Authentication 사용
+        Long currentUserId = Long.parseLong(authentication.getName()); // JWT에서 userId 추출
         ReservationDTO.Response updatedReservation = reservationService.updateReservationStatus(reservationId, request.getStatus(), currentUserId);
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<ReservationDTO.Response>builder()
                 .success(true)
@@ -86,7 +90,8 @@ public class ReservationController {
     @DeleteMapping("/{reservation_id}")
     public ResponseEntity<ProductDTO.ApiResponseWrapper<Void>> deleteReservation(
             @PathVariable("reservation_id") Long reservationId,
-            @RequestHeader(value = "X-USER-ID") Long currentUserId) {
+            Authentication authentication) { // @RequestHeader 대신 Authentication 사용
+        Long currentUserId = Long.parseLong(authentication.getName()); // JWT에서 userId 추출
         reservationService.deleteReservation(reservationId, currentUserId);
         return ResponseEntity.ok(ProductDTO.ApiResponseWrapper.<Void>builder()
                 .success(true)

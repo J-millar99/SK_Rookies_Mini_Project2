@@ -1,9 +1,9 @@
 # React 컴포넌트 설계 문서 템플릿
 ## 문서 정보
-- **작성자**: [안태경]
-- **작성일**: [2025-06-06]
-- **버전**: [v1.0]
-- **검토자**: [안태경]
+- **작성자**: [안태경, 김우준]
+- **작성일**: [2025-06-07]
+- **버전**: [v1.1]
+- **검토자**: [안태경, 김우준]
 ---
 
 ## React 컴포넌트 개요
@@ -88,7 +88,7 @@ src/
 ## 2. **[HomePage]** 
 
 ### 목적 및 역할
-- **주요 목적**: 애플리케이션의 메인 페이지로, 상품 목록을 무한 스크롤로 표시하고 상품 등록 및 내 상품 목록 페이지로 이동하는 링크를 제공합니다.
+- **주요 목적**: 애플리케이션의 메인 페이지로, 상품 목록을 무한 스크롤로 표시합니다.
 
 
 ### 기능 요구사항
@@ -98,9 +98,6 @@ src/
 - [x] 무한 스크롤 (react-infinite-scroll-component) 구현
 - [x] 모든 상품 로드 완료 시 메시지 표시
 - [x] 등록된 상품이 없을 때 메시지 표시
-- [x] 상품 등록 버튼 제공
-- [x] 상품 등록 버튼 클릭 시 로그인 상태 확인 및 알림
-- [x] 상품 등록 페이지로 이동
 - [x] 페이지 마운트 시 스크롤 상단 이동 및 상품 목록 초기화
 - [x] 중복 상품 제거 및 업데이트 로직 적용
 
@@ -176,6 +173,7 @@ src/
 - [x] 지역 정보 표시
 - [x] 배지(Chip) 표시 기능
 - [x] 클릭 시 상세 페이지로 라우팅
+- [X] status가 SALE이 아니라면 흐려보이게 표시
 
 
 ## 컴포넌트 구조 설계
@@ -342,7 +340,8 @@ src/
 ```
 src/
 ├── components/
-│   └── PhoneVerification.jsx     # 본인인증 컴포넌트
+│   ├── PhoneVerification.jsx     # 본인인증 컴포넌트
+│   └── FormSnackbar.jsx          # 결과 팝업
 ├── utils/
 │   └── portone.js                # 환경 변수 및 포트원 관련 상수
 ```
@@ -647,7 +646,7 @@ src/
 
 ### 컴포넌트 분류
 - **타입**: [x] 페이지 컴포넌트 [ ] 레이아웃 컴포넌트 [ ] 기능 컴포넌트 [ ] 공통 컴포넌트
-- **복잡도**: [ ] 단순 (50줄 이하) [x] 보통 (50-100줄) [ ] 복합 (100줄 이상)
+- **복잡도**: [ ] 단순 (50줄 이하) [ ] 보통 (50-100줄) [X] 복합 (100줄 이상)
 - **상태 관리**: [x] 로컬 상태만 [ ] Redux(Zustand) 연결 [ ] 상태 없음
 
 ### 파일 구조
@@ -865,7 +864,7 @@ src/
 - [x] 상품 ID에 따른 상세 정보 조회
 - [x] 이미지 슬라이더 구성 및 인덱스 이동
 - [x] 상품 정보 및 설명 출력
-- [x] 판매자 정보 출력 및 사용자 권한에 따른 버튼 출력 (수정 / 신고)
+- [x] 판매자 정보 출력 및 사용자 권한에 따른 버튼 출력 ( 수정, 삭제, myPage / 찜하기, 거래신청, 신고)
 - [x] 로그인한 유저 정보와 상품 판매자 비교
 - [x] 유사 상품 목록 렌더링
 
@@ -881,15 +880,14 @@ src/
 ```
 src/
 ├── pages/
-│   └── ProductDetailPage.jsx       # 메인 컴포넌트
+│   └── ProductDetailPage.jsx   # 메인 컴포넌트
 ├── components/
 │   ├── ProductImageSlider.jsx  # 이미지 슬라이더
 │   ├── ProductActions.jsx      # 액션 버튼
-│   └── ProductsList.jsx        # 비슷한 상품 목록
+│   ├── ProductsList.jsx        # 비슷한 상품 목록
+│   └── FormSnackbar.jsx        # 결과를 알려주는 팝업
 ├── utils/
 │   └── FormatTime.js     
-├── err/
-│   └── NotFound.js
 ```
 
 
@@ -921,7 +919,7 @@ src/
 | [ProductImageSlider] | components/ | 상품 이미지 슬라이더 | 보통 |
 | [ProductActions] | components/ | 찜, 채팅, 거래 관련 액션 버튼 | 보통 |
 | [ProductsList] | components/ | 유사 상품 리스트 | 보통 |
-| [NotFound] | err/ | 404 에러 페이지 | 보통 |
+| [FormSnackbar] | components/ | 결과 팝업 | 높음 |
 
 ### API 연동
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
@@ -990,23 +988,24 @@ src/
 ## 17. **[ProductActions]**
 
 ### 목적 및 역할
-- **주요 목적**: 상품 상세 페이지 하단에 위치하며, '찜하기', '대화하기', '바로구매' 버튼을 제공합니다. '찜하기' 버튼은 찜 상태를 토글하며 백엔드 API와 연동합니다.
+- **주요 목적**: 상품 상세 페이지 하단에 위치하며, '찜하기', '거래신청' 버튼을 제공합니다. '찜하기' 버튼은 찜 상태를 토글하며 백엔드 API와 연동합니다. 만약 상품을 올린 본인이라면 '상품 수정', '상품 삭제' 버튼으로 변경됩니다.
 
 
 ### 기능 요구사항
 - [x] 찜하기/찜 취소 기능 (API 연동 및 상태 변경)
 - [x] 찜 상태에 따른 버튼 스타일 변경
-- [x] "대화하기", "바로구매" 버튼 제공 (기능은 미구현 상태)
+- [x] "대화하기", "바로구매" 버튼 제공
+- [X] "상품 수정", "상품 삭제" 버튼 제공
 - [x] 인증되지 않은 사용자의 찜 시도 시 알림 제공
 - [x] 찜 처리 중 로딩 상태 관리
-- [x] 404 응답 시 NotFound 페이지로 이동
+- [x] 에러 발생시 팝업으로 알림
 
 
 ## 컴포넌트 구조 설계
 
 ### 컴포넌트 분류
 - **타입**: [ ] 페이지 컴포넌트 [ ] 레이아웃 컴포넌트 [x] 기능 컴포넌트 [ ] 공통 컴포넌트
-- **복잡도**: [ ] 단순 (50줄 이하) [x] 보통 (50-100줄) [ ] 복합 (100줄 이상)
+- **복잡도**: [ ] 단순 (50줄 이하) [ ] 보통 (50-100줄) [x] 복합 (100줄 이상)
 - **상태 관리**: [x] 로컬 상태만 [ ] Redux(Zustand) 연결 [ ] 상태 없음
 
 ### 파일 구조
@@ -1014,6 +1013,8 @@ src/
 src/
 ├── components/
 │   └── ProductAction.jsx 
+├── api/
+│   └── reservationService.js
 ```
 
 ## React 컴포넌트 Props 설계
@@ -1023,7 +1024,9 @@ src/
 |---------|------|----------|--------|------|
 | [productId] | string | 필수 | - | [찜 API 호출 시 사용되는 상품 ID] |
 | [isInitiallyLiked] | boolean | 선택 | false | [초깃값으로 전달되는 찜 상태] |
-
+| [isOwner] | boolean | 필수 | false | [상품 수정, 삭제 버튼 혹은 찜하기, 거래신청 버튼을 보여주는 기준] |
+| [onEdit] | string | 선택 | - | [상품 수정 함수 호출]
+| [onDelete] | string | 선택 | - | [상품 삭제 함수 호출]
 ---
 
 ## 상태 관리 설계
@@ -1033,6 +1036,7 @@ src/
 |--------|------|--------|------|
 | [isLiked] | boolean | false | [현재 찜 상태 (UI 및 API에 반영)] |
 | [loading] | boolean | false | [찜 처리 중 버튼 비활성화에 사용] |
+| [iconBump] | boolean | false | [찜 처리 중 버튼 애니메이션에 사용] |
 
 
 ---
@@ -1048,6 +1052,7 @@ src/
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
 |----------------|--------|------|-----------|
 | [/api/wishlist/:productId] | PUT | 찜 추가/제거 요청 | 찜 버튼 클릭 시 |
+│ [reservationService.js] | POST | 거래 신청 | 거래 신청 버튼 클릭 시 |
 
 ### 성능 최적화
 - [x] 불필요한 렌더링 방지를 위한 loading 상태 사용
@@ -1088,15 +1093,15 @@ src/
 ```
 src/
 ├── pages/
-│   └── ProductRegisterPage.jsx # 메인 페이지 컴포넌트
+│   └── ProductRegisterPage.jsx      # 메인 페이지 컴포넌트
 ├── hooks/
-│   └── useProductForm.js  # 폼 전용 커스텀 훅
+│   └── useProductForm.js            # 폼 전용 커스텀 훅
 ├── components/
-│   ├── CategorySelect.jsx     # 카테고리 드롭다운
-│   ├── ProductImageUploader.jsx # 이미지 업로더
-│   └── FormErrorSnackbar.jsx  # 오류 스낵바
+│   ├── CategorySelect.jsx           # 카테고리 드롭다운
+│   ├── ProductImageUploader.jsx     # 이미지 업로더
+│   └── FormSnackbar.jsx             # 결과 스낵바
 ├── constants/
-│       ├── CategoryOptions.js           # 카테고리 옵션 등 상수
+│   └── CategoryOptions.js           # 카테고리 옵션 등 상수
 ```
 
 ## React 컴포넌트 Props 설계
@@ -1130,7 +1135,7 @@ src/
 | [ProductRegisterPage] | pages/ | 상품 등록/수정 페이지 메인 | 낮음 |
 | [CategorySelect] | components/ | 카테고리 선택 드롭다운 | 보통 |
 | [ProductImageUploader] | components/ | 이미지 업로드 및 미리보기 | 보통 |
-| [FormErrorSnackbar] | components/ | 오류 메시지 표시 | 높음 |
+| [FormSnackbar] | components/ | 결과 메시지 표시 | 높음 |
 
 ### API 연동
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
@@ -1172,8 +1177,6 @@ src/
 src/
 ├── components/
 │   └── CategorySelect.jsx        # 공통 카테고리 선택 컴포넌트
-├── constants/
-│   └── categoryOptions.js        # 카테고리 옵션 리스트
 ```
 
 ## React 컴포넌트 Props 설계
@@ -1220,7 +1223,7 @@ src/
 
 ### 기능 요구사항
 - [x] 이미지 파일 선택 및 미리보기 제공
-- [x] 최대 업로드 가능한 이미지 수 제한 (10장)
+- [x] 최대 업로드 가능한 이미지 수 제한 (3장)
 - [x] 각 이미지에 대한 삭제 기능 제공
 - [x] 첫 번째 이미지를 대표 이미지로 표시
 - [x] 이미지 선택 시 onChange 콜백으로 상위 상태 변경 반영
@@ -1264,17 +1267,17 @@ src/
 - **라이브러리**: [@mui/material, @mui/icons-material]
 - **유틸리티**: [URL.createObjectURL(file)]
 
-## 21. **[FormErrorSnackbar]**
+## 21. **[FormSnackbar]**
 
 ### 목적 및 역할
-- **주요 목적**: 사용자에게 폼 제출 또는 기타 오류 메시지를 스낵바 형태로 잠시 표시합니다.
+- **주요 목적**: 사용자에게 폼 제출 또는 기타 오류, 성공, 정보 메시지를 스낵바 형태로 잠시 표시합니다.
 
 ### 기능 요구사항
-- [x] 에러 메시지를 스낵바(Alert 형태)로 표시
+- [x] 오류, 성공, 정보 메시지를 스낵바(Alert 형태)로 표시
 - [x] 자동으로 닫히는 시간 설정 가능
 - [x] 수동으로 닫기 버튼 제공
 - [x] 위치: 화면 하단 중앙
-- [x] 에러 레벨로 스타일링된 Alert 사용 (severity="error")
+- [x] 오류, 성공, 정보 레벨로 스타일링된 Alert 사용 (severity="error"|"success"|"info")
 
 
 ## 컴포넌트 구조 설계
@@ -1288,7 +1291,7 @@ src/
 ```
 src/
 ├── components/
-│   └── FormErrorSnackbar.jsx   # 공통 에러 표시 컴포넌트
+│   └── FormSnackbar.jsx   # 공통 결과 표시 컴포넌트
 ```
 
 ## React 컴포넌트 Props 설계
@@ -1297,9 +1300,10 @@ src/
 | Props명 | 타입 | 필수여부 | 기본값 | 설명 |
 |---------|------|----------|--------|------|
 | [open] | boolean	 | 필수 | - | [스낵바 표시 여부] |
-| [message] | string | 필수 | - | [사용자에게 보여줄 에러 메시지] |
+| [message] | string | 필수 | - | [사용자에게 보여줄 결과 메시지] |
 | [onClose] | function | 필수 | - | [스낵바 닫기 시 실행될 콜백 함수] |
 | [duration] | number | 선택 | 3000 | [자동으로 닫히기까지의 시간(ms 단위)] |
+| [severity] | string | 선택 | info | [오류, 성공, 정보 레벨에 따른 색상] |
 
 
 ---
@@ -1309,7 +1313,7 @@ src/
 ### 주요 컴포넌트 목록
 | 컴포넌트명 | 위치 | 역할 | 재사용성 |
 |------------|------|------|----------|
-| [FormErrorSnackbar] | components/ | 공통 에러 메시지 표시 | 높음 |
+| [FormSnackbar] | components/ | 공통 결과 메시지 표시 | 높음 |
 
 
 
@@ -1319,7 +1323,7 @@ src/
 ## 22. **[MyProductsPage]**
 
 ### 목적 및 역할
-- **주요 목적**: 로그인한 사용자가 자신이 등록한 상품 목록을 확인하고, 각 상품의 상세 페이지로 이동할 수 있는 페이지 UI를 제공합니다.
+- **주요 목적**: 로그인한 사용자가 자신이 등록한 상품 목록을 확인하고, 각 상품의 상세 페이지로 이동할 수 있는 페이지 UI를 제공합니다. 또한 사용자가 찜한 상품 목록을 확인할 수도 있습니다.
 
 
 ### 기능 요구사항
@@ -1327,7 +1331,7 @@ src/
 - [x] 상품 목록을 리스트 형태로 렌더링
 - [x] 상품 클릭 시 상세 페이지로 이동
 - [x] 최초 렌더링 시 최상단으로 스크롤 이동
-- [x] 리스트 표시 시 시간 포맷팅 처리   
+- [x] 리스트 표시 시 시간 포맷팅 처리  
 
 
 ## 컴포넌트 구조 설계
@@ -1376,82 +1380,14 @@ src/
 
 ### 성능 최적화
 - [x] 불필요한 렌더링 방지를 위한 분리된 리스트 컴포넌트 사용
+- [x] 조건부 렌더링 최소화 (isDibsPage에 따른 분기 최적화)
 
 ### 외부 의존성
 - **라이브러리**: [axios, @mui/material, react-router-dom]
 - **API**: [/api/users/products]
 - **유틸리티**: [FormatTime]
 
-## 23. **[MyProductDetailPage]**
-
-### 목적 및 역할
-- **주요 목적**: 로그인한 사용자가 자신이 등록한 상품의 상세 정보를 확인하고, 상품 수정 또는 삭제를 할 수 있는 페이지 UI를 제공합니다.
-
-
-### 기능 요구사항
-- [x] 상품 ID를 기반으로 상세 정보 조회
-- [x] 이미지 슬라이더를 통한 상품 이미지 출력
-- [x] 상품 정보, 가격, 등록일 등 텍스트 정보 표시
-- [x] 상품 수정 페이지로 이동
-- [x] 상품 삭제 처리
-- [x] 목록으로 돌아가기 버튼 제공
-
-
-## 컴포넌트 구조 설계
-
-### 컴포넌트 분류
-- **타입**: [x] 페이지 컴포넌트 [ ] 레이아웃 컴포넌트 [ ] 기능 컴포넌트 [ ] 공통 컴포넌트
-- **복잡도**: [ ] 단순 (50줄 이하) [ ] 보통 (50-100줄) [x] 복합 (100줄 이상)
-- **상태 관리**: [x] 로컬 상태만 [ ] Redux(Zustand) 연결 [ ] 상태 없음
-
-### 파일 구조
-```
-src/
-├── pages/
-│   └── MyProductDetailPage.jsx    # MyProductDetailPage 컴포넌트
-├── components/
-│   └── ProductImageSlider.jsx
-├── utils/
-│   └── FormatTime.js               # 시간 포맷팅 유틸
-```
-
-
----
-
-## 상태 관리 설계
-
-### 로컬 상태 (useState)
-| 상태명 | 타입 | 초기값 | 용도 |
-|--------|------|--------|------|
-| [imgIdx] | number | 0 | [이미지 슬라이더의 현재 인덱스] |
-| [product] | object | null | [조회된 상품 데이터 객체] |
-| [loading] | boolean | true | [조회된 상품 데이터 객체] |
-
-
----
-
-## 구현 세부사항
-
-### 주요 컴포넌트 목록
-| 컴포넌트명 | 위치 | 역할 | 재사용성 |
-|------------|------|------|----------|
-| [MyProductDetailPage] | pages/ | 본인 상품 상세 조회 페이지 | 낮음 |
-| [ProductImageSlider] | components/ | 상품 이미지 좌우 슬라이드 기능 | 보통 |
-
-### API 연동
-| API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
-|----------------|--------|------|-----------|
-| [/api/users/products/:productId] | GET | 특정 상품 상세 조회 | 컴포넌트 마운트 시 |
-| [/api/users/products/:productId] | DELETE | 특정 상품 삭제 | 삭제 버튼 클릭 시 |
-
-
-
-### 외부 의존성
-- **라이브러리**: [react-router-dom, axios, @mui/material]
-- **API**: [/api/users/products/:productId]
-- **유틸리티**: [FormatTime]
-
-## 24. **[ProductSearch]**
+## 23. **[ProductSearch]**
 
 ### 목적 및 역할
 - **주요 목적**: 사용자에게 지역, 키워드, 카테고리, 가격 범위를 기준으로 상품을 검색할 수 있는 UI를 제공합니다. 입력받은 검색 조건으로 상품 목록 페이지(/products)로 이동합니다.
@@ -1477,10 +1413,11 @@ src/
 src/
 ├── components/
 │   ├── ProductSearch.jsx          # 본 컴포넌트
-│   ├── CategorySelect.jsx
-│   ├── KeywordSearch.jsx
-│   ├── PriceToggleButton.jsx
-│   └── AreaSelectModal.jsx
+│   ├── CategorySelect.jsx         # 카테고리 선택
+│   ├── KeywordSearch.jsx          # 검색 내용
+│   ├── PriceToggleButton.jsx      # 가격 설정
+│   ├── AreaSelectModal.jsx        # 지역 선택 모달
+│   └── FormSnackbar.jsx           # 결과 팝업
 ├── api/
 │   └── category.js                # getCategories API 함수 포함
 ```
@@ -1516,6 +1453,7 @@ src/
 | [AreaSelectModal] | components/ | 지역 선택 모달창 | 보통 |
 | [KeywordSearch] | components/ | 키워드 입력창 | 높음 |
 | [PriceToggleButton] | components/ | 가격 필터 입력창 토글 | 높음 |
+| [FormSnackbar] | components/ | 결과 팝업 | 높음 |
 
 ### API 연동
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
@@ -1530,10 +1468,10 @@ src/
 - **API**: [/api/categories]
 - **유틸리티**: [URLSearchParams]
 
-## 25. **[AreaSelectModal]**
+## 24. **[AreaSelectModal]**
 
 ### 목적 및 역할
-- **주요 목적**: 사용자가 검색 또는 내 위치 찾기를 통해 특정 지역(읍면동 단위)을 선택할 수 있는 모달 UI를 제공합니다. 대한민국 읍면동 데이터를 기반으로 자동 완성 기능을 제공합니다. 카카오 지도 API를 사용하여 현재 위치를 좌표에서 주소로 변환하는 기능을 포함합니다.
+- **주요 목적**: 사용자가 검색 또는 내 위치 찾기를 통해 특정 지역(시도 단위)을 선택할 수 있는 모달 UI를 제공합니다. 대한민국 읍면동 데이터를 기반으로 자동 완성 기능을 제공합니다. 카카오 지도 API를 사용하여 현재 위치를 좌표에서 주소로 변환하는 기능을 포함합니다.
 
 
 ### 기능 요구사항
@@ -1557,9 +1495,8 @@ src/
 ```
 src/
 ├── components/
-│   └── AreaSelectModal.jsx
-├── json/
-│   └── emd_code.json
+│   ├── AreaSelectModal.jsx
+│   └── FormSnackbar.jsx          # 결과 팝업
 ```
 
 ## React 컴포넌트 Props 설계
@@ -1597,6 +1534,7 @@ src/
 | 컴포넌트명 | 위치 | 역할 | 재사용성 |
 |------------|------|------|----------|
 | [AreaSelectModal] | components/ | 지역 선택 모달창 | 낮음 |
+| [FormSnackbar] | components/ | 결과 팝업 | 높음 |
 
 ### API 연동
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
@@ -1609,7 +1547,7 @@ src/
 - **API**: [https://dapi.kakao.com/v2/local/geo/coord2address.json]
 - **유틸리티**: [브라우저(navigator.geolocation)]
 
-## 26. **[KeywordSearch]**
+## 25. **[KeywordSearch]**
 
 ### 목적 및 역할
 - **주요 목적**: 사용자가 검색어를 입력할 수 있는 간단한 텍스트 입력 필드를 제공하는 UI 컴포넌트입니다. 값, 변경 이벤트, 키 다운 이벤트를 props로 받아 처리합니다.
@@ -1662,7 +1600,7 @@ src/
 - [x] 불필요한 상태 없음으로 성능 우수
 
 
-## 27. **[PriceToggleButton]**
+## 26. **[PriceToggleButton]**
 
 ### 목적 및 역할
 - **주요 목적**: 가격 입력 필드를 토글하여 보이거나 숨기는 버튼 및 해당 입력 필드를 포함하는 컴포넌트입니다.
@@ -1720,10 +1658,10 @@ src/
 - **라이브러리**: [React]
 - **유틸리티**: [PriceInput]
 
-## 28. **[MyPage]**
+## 27. **[MyPage]**
 
 ### 목적 및 역할
-- **주요 목적**: 로그인한 사용자의 프로필 정보(이름, 전화번호, 지역)를 표시하고 수정하며, 계정 삭제 기능을 제공합니다. 또한 사용자의 거래 목록, 찜 목록, 알림 리스트(현재는 임시 데이터)를 표시합니다.
+- **주요 목적**: 로그인한 사용자의 프로필 정보(이름, 전화번호, 지역)를 표시하고 수정하며, 계정 삭제 기능을 제공합니다. 또한 이곳에서 상품 등록, 내가 등록한 상품, 찜한 상품 버튼을 눌러 링크로 이동할 수 있으며, 사용자의 거래 목록, 알림 리스트(현재는 임시 데이터)를 표시합니다.
 
 
 ### 기능 요구사항
@@ -1734,27 +1672,35 @@ src/
 - [x] 계정 삭제를 위한 비밀번호 확인 및 삭제 요청
 - [x] API 통신 (GET, PUT, DELETE) 및 인증 토큰 처리
 - [x] Redux를 통한 인증 정보 상태 관리 및 반영
+- [x] 상품 등록 버튼 제공
+- [x] 상품 등록 페이지로 이동
+- [x] My상품 버튼 제공
+- [x] 내가 등록한 상품 페이지로 이동
+- [x] 찜한 상품 버튼 제공
+- [x] 내가 찜한 상품 페이지로 이동
 
 
 ## 컴포넌트 구조 설계
 
 ### 컴포넌트 분류
 - **타입**: [X] 페이지 컴포넌트 [ ] 레이아웃 컴포넌트 [ ] 기능 컴포넌트 [ ] 공통 컴포넌트
-- **복잡도**: [ ] 단순 (50줄 이하) [X] 보통 (50-100줄) [ ] 복합 (100줄 이상)
+- **복잡도**: [ ] 단순 (50줄 이하) [ ] 보통 (50-100줄) [X] 복합 (100줄 이상)
 - **상태 관리**: [ ] 로컬 상태만 [X] Redux(Zustand) 연결 [ ] 상태 없음
 
 ### 파일 구조
 ```
 src/
 ├── pages/
-│   └── MyPage.jsx/  # MyPage 컴포넌트 (본 컴포넌트)
+│   └── MyPage.jsx/               # MyPage 컴포넌트 (본 컴포넌트)
 ├── features/
 │   └── auth/
-│       └── authSlice.js # 인증 관련 Redux slice
+│       └── authSlice.js          # 인증 관련 Redux slice
 ├── api/
-│   └── area.js # 지역 API 서비스 (getAreas)
+│   └── area.js                   # 지역 API 서비스 (getAreas)
 ├── store/
-│   └── authStore.js # 전역 상태 관리 (로그아웃 등)
+│   └── authStore.js              # 전역 상태 관리 (로그아웃 등)
+├── components/
+│   └── FormSnackbar.jsx          # 결과 팝업
 ```
 
 
@@ -1772,7 +1718,6 @@ src/
 | password | string | '' | 계정 삭제 시 비밀번호 입력 |
 | showDeleteConfirm | boolean | false | 계정 삭제 확인 폼 표시 여부 |
 | trades | array | [] | 현재 진행 중인 거래 목록 (mock 데이터) |
-| wishlist | array | [] | 찜 목록 (mock 데이터) |
 | notifications | array | [] | 알림 리스트 (mock 데이터) |
 
 ### Redux 상태 (해당시)
@@ -1789,6 +1734,7 @@ src/
 | 컴포넌트명 | 위치 | 역할 | 재사용성 |
 |------------|------|------|----------|
 | MyPage | pages/ | 사용자 마이페이지, 프로필 조회 및 수정, 거래/찜/알림 리스트 표시, 계정 삭제 | 낮음 |
+| [FormSnackbar] | components/ | 결과 팝업 | 높음 |
 
 ### API 연동
 | API 엔드포인트 | 메서드 | 용도 | 호출 시점 |
@@ -1805,7 +1751,7 @@ src/
 - **라이브러리**: [React, Redux, React-Redux, React Router, axios, @mui/material]
 - **API**: [/api/users/profile, /api/auth/delete, /api/areas]
 
-## 29. **[AdminUserPage]**
+## 28. **[AdminUserPage]**
 
 ### 목적 및 역할
 - **주요 목적**: 관리자 페이지에서 전체 유저 목록을 조회하고, 각 유저의 상세 정보를 확인하며, 비관리자 유저에 한해 Ban 처리 기능을 제공한다.
@@ -1870,7 +1816,7 @@ src/
 - **API**: [/api/admin/users]
 - **유틸리티**: [JavaScript Date 객체]
 
-## 30. **[ProtectedRoute]**
+## 29. **[ProtectedRoute]**
 
 ### 목적 및 역할
 - **주요 목적**: 사용자가 인증되었는지 확인하고, 인증되지 않은 경우 로그인 페이지로 리다이렉션하여 보호된 라우트에 대한 접근을 제어하는 컴포넌트입니다.

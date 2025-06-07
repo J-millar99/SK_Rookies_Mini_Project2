@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Box, Typography, Divider, Grid, Button } from '@mui/material';
-import NotFound from '../err/NotFound';
 import { FormatTime } from '../utils/FormatTime';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -9,38 +8,39 @@ import ProductsList from '../components/ProductsList';
 import ProductImageSlider from '../components/ProductImageSlider';
 import ProductActions from '../components/ProductActions';
 import ReportModal from '../components/ReportModal';
+import { useTheme } from '@mui/material/styles';
+import FormSnackbar from '../components/FormSnackbar';
+
 
 const ProductDetailPage = () => {
   const { product_id } = useParams();
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.auth.identityInfo); // 로그인한 유저 정보
-  const authState = useSelector((state) => state.auth);
   const [error, setError] = useState(null);
   const [images, setImages] = useState([]);
   const [reportOpen, setReportOpen] = useState(false);
   const [similarProducts, setSimilarProducts] = useState([]);
-
-  console.log("🧪 auth state:", authState);
+  const theme = useTheme();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
+  const [isLiked, setIsLiked] = useState(false); // 추가
 
-  useEffect(() => {
-    console.log('🔍 currentUser:', currentUser);
-    console.log('🔍 currentUser.user_id:', currentUser?.user_id);
-    console.log('🔍 product.seller:', product?.seller);
-    console.log('🔍 product.seller.id:', product?.seller?.id);
-  }, [currentUser, product]);
+  // snackbar 상태
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('error');
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 백엔드 연동 시:
+  // 상품 상세 정보 불러오기
   useEffect(() => {
     axios.get(`http://localhost:8080/api/products/${product_id}`)
       .then(res => {
-        console.log('상품 상세 응답:', res.data); // 응답 콘솔 출력
+        console.log("상품 상세 정보 응답:", res.data); // 콘솔 출력 추가
         setProduct(res.data.data);
         setLoading(false);
       })
@@ -48,8 +48,14 @@ const ProductDetailPage = () => {
         setLoading(false);
         if (err.response && err.response.status === 404) {
           setError('notfound');
+          setSnackbarMsg('ID를 찾을 수 없습니다!');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
         } else {
           setError('unknown');
+          setSnackbarMsg('알 수 없는 오류가 발생했습니다.');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
         }
       });
   }, [product_id, navigate]);
@@ -72,6 +78,28 @@ const ProductDetailPage = () => {
       .catch(() => setImages([]));
   }, [product?.id]);
 
+  // 찜 상태 조회
+  useEffect(() => {
+    if (!product?.id) return;
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+    axios
+      .get(`http://localhost:8080/api/dibs/${product.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => {
+        console.log("찜 상태 응답:", res.data);
+        if (res.data?.success && typeof res.data.data?.liked === "boolean") {
+          setIsLiked(res.data.data.liked);
+        }
+      })
+      .catch(err => {
+        console.log("찜 상태 조회 실패:", err);
+      });
+  }, [product?.id]);
+
   // 같은 카테고리의 상품들
   useEffect(() => {
     if (!product?.categoryName || !product?.id) return;
@@ -88,8 +116,30 @@ const ProductDetailPage = () => {
   }, [product?.categoryName, product?.id]);
 
   if (loading) return <div>로딩 중...</div>;
-  if (error === 'notfound') return <NotFound />;
-  if (error) return <div>알 수 없는 오류가 발생했습니다.</div>;
+  if (error === 'notfound')
+    return (
+      <>
+        <FormSnackbar
+          open={snackbarOpen}
+          message={snackbarMsg}
+          severity={snackbarSeverity}
+          onClose={() => setSnackbarOpen(false)}
+        />
+        <div>상품을 찾을 수 없습니다.</div>
+      </>
+    );
+  if (error)
+    return (
+      <>
+        <FormSnackbar
+          open={snackbarOpen}
+          message={snackbarMsg}
+          severity={snackbarSeverity}
+          onClose={() => setSnackbarOpen(false)}
+        />
+        <div>알 수 없는 오류가 발생했습니다.</div>
+      </>
+    );
   if (!product) return null;
 
   const handlePrev = (e) => {
@@ -108,7 +158,9 @@ const ProductDetailPage = () => {
 
   const handleReportSubmit = () => {
     setReportOpen(false);
-    alert('신고 처리가 완료되었습니다.');
+    setSnackbarMsg('신고 처리가 완료되었습니다.');
+    setSnackbarSeverity('success');
+    setSnackbarOpen(true);
     // 실제 신고 API 호출은 이곳에서 처리
   };
 
@@ -117,6 +169,39 @@ const ProductDetailPage = () => {
   };
 
   const isOwner = currentUser?.id === product.seller?.id;
+
+    // 상품 삭제 핸들러
+  const handleDelete = () => {
+    if (window.confirm('정말로 이 상품을 삭제하시겠습니까?')) {
+      axios
+        .delete(`http://localhost:8080/api/users/products/${product.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        })
+        .then(() => {
+          navigate('/my-products', {
+            state: {
+              snackbar: {
+                open: true,
+                message: '상품이 삭제되었습니다.',
+                severity: 'success',
+              },
+            },
+          });
+        })
+        .catch(() => {
+          setSnackbarMsg('상품 삭제에 실패했습니다.');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
+        });
+    }
+  };
+
+  // 상품 수정 핸들러
+  const handleEdit = () => {
+    navigate(`/my-products/${product.id}/edit`);
+  };
 
   return (
     <Box sx={{ px: 5, py: 4 }}>
@@ -163,6 +248,8 @@ const ProductDetailPage = () => {
                   {product.isCompleted ? 'SOLD' : product.isReserved ? 'RESERVED' : 'SALE'}
                 <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
                 등록일: {FormatTime(product.createdAt)}
+                <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+                조회수: {product.viewCount}
               </Typography>
               <Divider sx={{ mb: 2, width: 725 }} />
               <Typography variant="h3" sx={{ mb: 2, fontWeight: 700 }}>
@@ -172,7 +259,13 @@ const ProductDetailPage = () => {
                 지역: {product.seller?.area?.areaName || product.seller?.areaName || '지역정보 없음'}
               </Typography>
             </Box>
-            <ProductActions />
+            <ProductActions
+              productId={product.id}
+              isOwner={isOwner}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isInitiallyLiked={isLiked}
+            />
           </Box>
         </Grid>
 
@@ -234,7 +327,7 @@ const ProductDetailPage = () => {
                       })(),
                       fontSize: 32,
                       fontWeight: 700,
-                      color: '#fff',
+                      color: 'default',
                       objectFit: 'cover',
                       userSelect: 'none',
                     }}
@@ -253,21 +346,21 @@ const ProductDetailPage = () => {
                       borderRadius: 2,
                       fontSize: 16,
                       fontWeight: 700,
-                      border: `2px solid ${isOwner ? '#1976d2' : '#EA002C'}`,
-                      color: isOwner ? '#1976d2' : '#EA002C',
-                      background: '#fff',
+                      border: `2px solid ${isOwner ? theme.palette.info.main : theme.palette.error.main}`,
+                      color: isOwner ? theme.palette.info.main : theme.palette.error.main,
+                      background: 'default',
                       '&:hover': {
-                        background: isOwner ? '#e3f2fd' : '#fff0f3',
-                        borderColor: isOwner ? '#1976d2' : '#EA002C',
+                        background: isOwner ? theme.palette.info.extraLight : theme.palette.error.extraLight,
+                        borderColor: isOwner ? theme.palette.info.dark : theme.palette.error.dark,
                       },
                     }}
                     onClick={
                       isOwner
-                        ? () => navigate(`/my-products/${product.id}/edit`)
+                        ? () => navigate('/users/profile') // 마이페이지로 이동
                         : handleReport
                     }
                   >
-                    {isOwner ? '상품 수정' : '신고하기'}
+                    {isOwner ? '마이페이지' : '신고하기'}
                   </Button>
                 </Box>
               </Box>
@@ -280,6 +373,12 @@ const ProductDetailPage = () => {
         open={reportOpen}
         onClose={handleReportClose}
         onSubmit={handleReportSubmit}
+      />
+      <FormSnackbar
+        open={snackbarOpen}
+        message={snackbarMsg}
+        severity={snackbarSeverity}
+        onClose={() => setSnackbarOpen(false)}
       />
     </Box>
   );
